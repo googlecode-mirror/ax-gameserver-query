@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("ax_gameserver_query", "for ax_gameserver_query support", "no");
+
+// Otherwise, use ARG_ENABLE
+ARG_ENABLE("ax_gameserver_query", "enable ax_gameserver_query support", "no");
+
+if (PHP_AX_GAMESERVER_QUERY != "no") {
+	EXTENSION("ax_gameserver_query", "php_ax_gameserver_query.c ax_gameserver_query.c");
+}
+
