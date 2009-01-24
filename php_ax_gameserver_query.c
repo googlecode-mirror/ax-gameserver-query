@@ -116,8 +116,6 @@ PHP_FUNCTION(axgsq_connect)
 	}
 	struct axgsq_res* pResource;
 	pResource = axgsq_connect( iGameServer, cConnectionString, iPort );
-
-	//php_printf( "Game Server: %d\nConnection String: %s\nPort: %d\n", iGameServer, cConnectionString, iPort );
 	ZEND_REGISTER_RESOURCE( return_value, pResource, ax_gameserver_query_resource );
 }
 
@@ -158,20 +156,31 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	{
 		switch( pServerInfo->iGameServer )
 		{
-		case AXGSQ_SOURCE: ;
+		case AXGSQ_SOURCE: ; // Yes the semi-colon is ment to be there for gcc compiler issues
 			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->pSI;
 			array_init( return_value );
-			add_assoc_string( return_value, "GameDescription", pSIs->GameDescription, 1 );
+			add_assoc_long( return_value, "Type", pSIs->Type );
+			add_assoc_long( return_value, "Version", pSIs->Version );
 			add_assoc_string( return_value, "ServerName", pSIs->ServerName, 1 );
 			add_assoc_string( return_value, "Map", pSIs->Map, 1 );
+			add_assoc_string( return_value, "GameDirectory", pSIs->GameDirectory, 1 );
+			add_assoc_string( return_value, "GameDescription", pSIs->GameDescription, 1 );
+			add_assoc_long( return_value, "AppID", pSIs->AppID );
 			add_assoc_long( return_value, "NumberOfPlayers", pSIs->NumberOfPlayers );
-			add_assoc_long( return_value, "NumberOfBots", pSIs->NumberOfBots );
 			add_assoc_long( return_value, "MaximumPlayers", pSIs->MaximumPlayers );
+			add_assoc_long( return_value, "NumberOfBots", pSIs->NumberOfBots );
+			add_assoc_string( return_value, "Dedicated", "TODO: Add Dedicated support", 1 );
+			add_assoc_string( return_value, "OS", "TODO: Add OS support", 1 );
 			add_assoc_long( return_value, "Password", pSIs->Password );
-
+			add_assoc_long( return_value, "Secure", pSIs->Secure );
+			add_assoc_string( return_value, "GameVersion", pSIs->GameVersion, 1 );
+			free( pSIs );
+			free( pServerInfo );
+			return;
 			break;
 		default:
 			//error
+			free( pServerInfo );
 			RETURN_FALSE;
 		}
 	}
