@@ -5,7 +5,9 @@
 
 int axgsq_isIpAddress( const char* cConnectionString );
 unsigned char axgsq_get_byte( unsigned char* cInput, int* iPos );
-unsigned short axgsq_get_short( unsigned char* cInput, int* iPos );
+short axgsq_get_short( unsigned char* cInput, int* iPos );
+long axgsq_get_long( unsigned char* cInput, int* iPos );
+float axgsq_get_float( unsigned char* cInput, int* iPos );
 unsigned char* axgsq_get_string( unsigned char* cInput, int* iPos );
 
 struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString, int iPort )
@@ -122,18 +124,17 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 	{
 	case AXGSQ_SOURCE:
 		pServerInfo->iGameServer = AXGSQ_SOURCE;
+		struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
+		if( pSI == NULL )
+			return NULL;
+		memset( pSI, 0, sizeof(struct axgsq_serverinfo_source) );
 		if( send( pResource->pSocket, "\xFF\xFF\xFF\xFF\x54Source Engine Query\x00", 25, 0 ) == -1 )
 			return NULL;
 		cInput = (unsigned char*) malloc( 2049 );
 		memset( cInput, 0, 2049 );
 		if( recv( pResource->pSocket, (char*)cInput, 2048, 0 ) < 1 )
 			return NULL;
-		struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
-		if( pSI == NULL )
-			return NULL;
-		memset( pSI, 0, sizeof(struct axgsq_serverinfo_source) );
-		iPos = 4;
-		pSI->Type = axgsq_get_byte( cInput, &iPos );
+		iPos = 5;
 		pSI->Version = axgsq_get_byte( cInput, &iPos );
 		pSI->ServerName = axgsq_get_string( cInput, &iPos );
 		pSI->Map = axgsq_get_string( cInput, &iPos );
@@ -148,7 +149,45 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 		pSI->Password = axgsq_get_byte( cInput, &iPos );
 		pSI->Secure = axgsq_get_byte( cInput, &iPos );
 		pSI->GameVersion = axgsq_get_string( cInput, &iPos );
-		free( cInput );
+
+		// A2S_SERVERQUERY_GETCHALLENGE - 
+		//   Due to a valve update breaking the protocol for 
+		//   goldsource servers we use an invalid A2S_PLAYER request.
+		// "\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF"
+		if( send( pResource->pSocket, "\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF", 9, 0 ) == -1 )
+			return NULL;
+		memset( cInput, 0, 2049 );
+		if( recv( pResource->pSocket, (char*)cInput, 2048, 0 ) < 1 )
+			return NULL;
+		iPos = 5;
+		char cChallenge[5];
+		cChallenge[0] = axgsq_get_byte( cInput, &iPos );
+		cChallenge[1] = axgsq_get_byte( cInput, &iPos );
+		cChallenge[2] = axgsq_get_byte( cInput, &iPos );
+		cChallenge[3] = axgsq_get_byte( cInput, &iPos );
+		cChallenge[4] = 0;
+
+		// A2S_PLAYER
+		// "\xFF\xFF\xFF\xFF\x55%s"
+		char* cTemp = (char*) malloc( 10 );
+		sprintf( cTemp, "\xFF\xFF\xFF\xFF\x55%s", cChallenge );
+		if( send( pResource->pSocket, cTemp, 9, 0 ) == -1 )
+			return NULL;
+		memset( cInput, 0, 2049 );
+		if( recv( pResource->pSocket, cInput, 2048, 0 ) < 1 )
+			return NULL;
+		iPos = 5;
+		pSI->NumPlayers = axgsq_get_byte( cInput, &iPos );
+		int x;
+		for( x = 0; x < pSI->NumPlayers; x++ )
+		{
+			pSI->Players[x].Index = axgsq_get_byte( cInput, &iPos );
+			pSI->Players[x].PlayerName = axgsq_get_string( cInput, &iPos );
+			pSI->Players[x].Kills = axgsq_get_long( cInput, &iPos );
+			pSI->Players[x].TimeConnected = axgsq_get_float( cInput, &iPos );
+		}
+
+
 		pServerInfo->pSI = pSI;
 		break;
 	default:
@@ -185,10 +224,24 @@ unsigned char axgsq_get_byte( unsigned char* cInput, int* iPos )
 	return Ret;
 }
 
-unsigned short axgsq_get_short( unsigned char* cInput, int* iPos )
+short axgsq_get_short( unsigned char* cInput, int* iPos )
 {
-	unsigned short Ret = ( cInput[ *iPos + 1 ] << 8 ) | cInput[ *iPos ];
+	unsigned short Ret = *(short*)&cInput[ *iPos ];
 	*iPos = *iPos + 2;
+	return Ret;
+}
+
+long axgsq_get_long( unsigned char* cInput, int* iPos )
+{
+	long Ret = *(long*)&cInput[ *iPos ];
+	*iPos = *iPos + 4;
+	return Ret;
+}
+
+float axgsq_get_float( unsigned char* cInput, int* iPos )
+{
+	float Ret = *(float*)&cInput[ *iPos ];
+	*iPos = *iPos + 4;
 	return Ret;
 }
 

@@ -112,11 +112,18 @@ PHP_FUNCTION(axgsq_connect)
 	char* cConnectionString;
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "lsl", &iGameServer, &cConnectionString, &iConnectionString_len, &iPort ) == FAILURE )
 	{
-		return;
+		RETURN_NULL();
 	}
 	struct axgsq_res* pResource;
 	pResource = axgsq_connect( iGameServer, cConnectionString, iPort );
-	ZEND_REGISTER_RESOURCE( return_value, pResource, ax_gameserver_query_resource );
+	if( pResource == NULL )
+	{
+		RETURN_NULL();
+	}
+	else
+	{
+		ZEND_REGISTER_RESOURCE( return_value, pResource, ax_gameserver_query_resource );
+	}
 }
 
 PHP_FUNCTION(axgsq_disconnect)
@@ -125,7 +132,7 @@ PHP_FUNCTION(axgsq_disconnect)
 	struct axgsq_res* pResource;
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r", &zResource ) == FAILURE )
 	{
-		return;
+		RETURN_NULL();
 	}
 	ZEND_FETCH_RESOURCE( pResource, struct axgsq_res*, &zResource, -1, "ax_gameserver_query_resource", ax_gameserver_query_resource );
 	if( axgsq_disconnect( pResource ) )
@@ -144,7 +151,7 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	struct axgsq_res* pResource;
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r", &zResource ) == FAILURE )
 	{
-		return;
+		RETURN_NULL();
 	}
 	ZEND_FETCH_RESOURCE( pResource, struct axgsq_res*, &zResource, -1, "ax_gameserver_query_resource", ax_gameserver_query_resource );
 	struct axgsq_serverinfo* pServerInfo = axgsq_get_serverinfo( pResource );
@@ -158,8 +165,9 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 		{
 		case AXGSQ_SOURCE: ; // Yes the semi-colon is ment to be there for gcc compiler issues
 			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->pSI;
+			char temp[2];
+			temp[1] = 0;
 			array_init( return_value );
-			add_assoc_long( return_value, "Type", pSIs->Type );
 			add_assoc_long( return_value, "Version", pSIs->Version );
 			add_assoc_string( return_value, "ServerName", pSIs->ServerName, 1 );
 			add_assoc_string( return_value, "Map", pSIs->Map, 1 );
@@ -169,13 +177,35 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			add_assoc_long( return_value, "NumberOfPlayers", pSIs->NumberOfPlayers );
 			add_assoc_long( return_value, "MaximumPlayers", pSIs->MaximumPlayers );
 			add_assoc_long( return_value, "NumberOfBots", pSIs->NumberOfBots );
-			add_assoc_string( return_value, "Dedicated", "TODO: Add Dedicated support", 1 );
-			add_assoc_string( return_value, "OS", "TODO: Add OS support", 1 );
+			temp[0] = pSIs->Dedicated;
+			add_assoc_stringl( return_value, "Dedicated", temp, 1, 1 );
+			temp[0] = pSIs->OS;
+			add_assoc_stringl( return_value, "OS", temp, 1, 1 );
 			add_assoc_long( return_value, "Password", pSIs->Password );
 			add_assoc_long( return_value, "Secure", pSIs->Secure );
 			add_assoc_string( return_value, "GameVersion", pSIs->GameVersion, 1 );
-			free( pSIs );
-			free( pServerInfo );
+			add_assoc_long( return_value, "NumPlayers", pSIs->NumPlayers );
+
+			zval* zPlayerArray;
+			zval* zTempPArray;
+			ALLOC_INIT_ZVAL( zPlayerArray );
+			array_init( zPlayerArray );
+			int x;
+			for( x = 0; x < pSIs->NumPlayers; x++ )
+			{
+				ALLOC_INIT_ZVAL( zTempPArray );
+				array_init( zTempPArray );
+				add_assoc_long( zTempPArray, "Index", pSIs->Players[x].Index );
+				add_assoc_string( zTempPArray, "PlayerName", pSIs->Players[x].PlayerName, 1 );
+				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
+				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
+				add_next_index_zval( zPlayerArray, zTempPArray );
+			}
+			add_assoc_zval( return_value, "Players", zPlayerArray );
+
+			//delete [] temp;
+			//free( pSIs );
+			//free( pServerInfo );
 			return;
 			break;
 		default:
