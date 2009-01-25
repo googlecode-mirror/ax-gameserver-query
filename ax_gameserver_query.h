@@ -38,7 +38,6 @@ struct axgsq_serverinfo
 
 struct axgsq_serverinfo_source
 {
-	int Type;
 	int Version;
 	char* ServerName;
 	char* Map;
@@ -53,6 +52,14 @@ struct axgsq_serverinfo_source
 	int Password;
 	int Secure;
 	char* GameVersion;
+	int NumPlayers;
+	struct
+	{
+		int Index;
+		char* PlayerName;
+		int Kills;
+		float TimeConnected;
+	} Players[64];
 };
 
 
