@@ -1,0 +1,18 @@
+#summary One-sentence summary of this page.
+#labels Featured,Phase-Deploy
+
+= Introduction =
+
+A step by step guide to compiling & installing PHP with the ax_gameserver_query extension.
+
+
+= Step by step =
+
+  # Goto your php source folder and open the "ext" folder.
+  # Create a new folder called "ax_gameserver_query".
+  # Copy all the files from the projects trunk into the folder.
+  # Go back to the php source folder.
+  # Run "./buildconf --force".
+  # Once thats finished run "./configure --enable-ax_gameserver_query" (remeber to add any aditional switches for other extensions that you require).
+  # Now run the "make" command followed by the "make install" command to compile then install php.
+  # Now you done.
