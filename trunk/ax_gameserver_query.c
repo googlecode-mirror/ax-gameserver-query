@@ -4,6 +4,15 @@
 #include "ax_gameserver_query.h"
 
 int axgsq_isIpAddress( const char* cConnectionString );
+
+#ifdef _WIN32
+int axgsq_send( SOCKET s, const unsigned char *buf, int len, int flags );
+int axgsq_recv( SOCKET s, unsigned char *buf, int len, int flags );
+#else /*_WIN32*/
+int axgsq_send( int s, const unsigned char *buf, int len, int flags );
+int axgsq_recv( int s, unsigned char *buf, int len, int flags );
+#endif /*_WIN32*/
+
 unsigned char axgsq_get_byte( unsigned char* cInput, int* iPos );
 short axgsq_get_short( unsigned char* cInput, int* iPos );
 long axgsq_get_long( unsigned char* cInput, int* iPos );
@@ -125,9 +134,9 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 
 		unsigned char* cInput = NULL;
 		int iPos = 0;
-		switch( pResource->iGameServer )
+		// Creating a switch() using if/else if/else syntax due to incompatibility with Dev-C++ (gcc)
+		if( pResource->iGameServer == AXGSQ_SOURCE ) 
 		{
-		case AXGSQ_SOURCE:
 			pServerInfo->iGameServer = AXGSQ_SOURCE;
 			struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
 			if( pSI == NULL )
@@ -136,7 +145,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				return NULL;
 			}
 			memset( pSI, 0, sizeof(struct axgsq_serverinfo_source) );
-			if( axgsq_send( pResource->pSocket, "\xFF\xFF\xFF\xFF\x54Source Engine Query\x00", 25, 0 ) == -1 )
+			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFF\xFF\xFF\xFF\x54Source Engine Query\x00", 25, 0 ) == -1 )
 			{
 				printf( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -148,7 +157,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				return NULL;
 			}
 			memset( cInput, 0, 2049 );
-			if( axgsq_recv( pResource->pSocket, (char*)cInput, 2048, 0 ) < 1 )
+			if( axgsq_recv( pResource->pSocket, (unsigned char *)cInput, 2048, 0 ) < 1 )
 			{
 				printf( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -168,18 +177,17 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			pSI->Password = axgsq_get_byte( cInput, &iPos );
 			pSI->Secure = axgsq_get_byte( cInput, &iPos );
 			pSI->GameVersion = axgsq_get_string( cInput, &iPos );
-
 			// A2S_SERVERQUERY_GETCHALLENGE - 
 			//   Due to a valve update breaking the protocol for 
 			//   goldsource servers we use an invalid A2S_PLAYER request.
 			// "\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF"
-			if( axgsq_send( pResource->pSocket, "\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF", 9, 0 ) == -1 )
+			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF", 9, 0 ) == -1 )
 			{
 				printf( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			memset( cInput, 0, 2049 );
-			if( axgsq_recv( pResource->pSocket, (char*)cInput, 2048, 0 ) < 1 )
+			if( axgsq_recv( pResource->pSocket, (unsigned char *)cInput, 2048, 0 ) < 1 )
 			{
 				printf( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -191,17 +199,16 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			cChallenge[2] = axgsq_get_byte( cInput, &iPos );
 			cChallenge[3] = axgsq_get_byte( cInput, &iPos );
 			cChallenge[4] = 0;
-
 			// A2S_PLAYER
 			// "\xFF\xFF\xFF\xFF\x55%s"
-			char* cTemp = (char*) malloc( 10 );
+			unsigned char *cTemp = (unsigned char *) malloc( 10 );
 			if( cTemp == NULL )
 			{
 				printf( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
-			sprintf( cTemp, "\xFF\xFF\xFF\xFF\x55%s", cChallenge );
-			if( axgsq_send( pResource->pSocket, cTemp, 9, 0 ) == -1 )
+			sprintf( (char *)cTemp, "\xFF\xFF\xFF\xFF\x55%s", cChallenge );
+			if( axgsq_send( pResource->pSocket, (const unsigned char *)cTemp, 9, 0 ) == -1 )
 			{
 				printf( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -222,11 +229,10 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				pSI->Players[x].Kills = axgsq_get_long( cInput, &iPos );
 				pSI->Players[x].TimeConnected = axgsq_get_float( cInput, &iPos );
 			}
-
-
 			pServerInfo->pSI = pSI;
-			break;
-		default:
+		}
+		else
+		{
 			printf( "Unknown gameserver type given to axgsq_serverinfo();\n" );
 			return NULL;
 		}
@@ -260,9 +266,9 @@ int axgsq_isIpAddress( const char* cConnectionString )
 }
 
 #ifdef _WIN32
-int axgsq_send( SOCKET s, const char *buf, int len, int flags )
+int axgsq_send( SOCKET s, const unsigned char *buf, int len, int flags )
 #else /*_WIN32*/
-int axgsq_send( int s, const char *buf, int len, int flags )
+int axgsq_send( int s, const unsigned char *buf, int len, int flags )
 #endif /*_WIN32*/
 {
 	fd_set set;
@@ -274,14 +280,14 @@ int axgsq_send( int s, const char *buf, int len, int flags )
 	int tmp = select( s+1, NULL, &set, NULL, &tv );
 	//printf( "send int = %d\n", tmp );
 	if( tmp > 0 )
-		return send( s, buf, len, flags );
+		return send( s, (const char *)buf, len, flags );
 	return -1;
 }
 
 #ifdef _WIN32
-int axgsq_recv( SOCKET s, char *buf, int len, int flags )
+int axgsq_recv( SOCKET s, unsigned char *buf, int len, int flags )
 #else /*_WIN32*/
-int axgsq_recv( int s, char *buf, int len, int flags )
+int axgsq_recv( int s, unsigned char *buf, int len, int flags )
 #endif /*_WIN32*/
 {
 	fd_set set;
@@ -293,7 +299,7 @@ int axgsq_recv( int s, char *buf, int len, int flags )
 	int tmp = select( s+1, &set, NULL, NULL, &tv );
 	//printf( "recv int = %d\n", tmp );
 	if( tmp > 0 )
-		return recv( s, buf, len, flags );
+		return recv( s, (char *)buf, len, flags );
 	return -1;
 }
 
