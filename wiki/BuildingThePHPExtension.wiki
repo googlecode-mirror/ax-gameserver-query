@@ -1,12 +1,6 @@
-#summary One-sentence summary of this page.
+#summary A step by step guide to compiling & installing PHP with the ax_gameserver_query extension.
 #labels Featured,Phase-Deploy
 
-= Introduction =
-
-A step by step guide to compiling & installing PHP with the ax_gameserver_query extension.
-
-
-= Step by step =
 
   # Goto your php source folder and open the "ext" folder.
   # Create a new folder called "ax_gameserver_query".
