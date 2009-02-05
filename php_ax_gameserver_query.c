@@ -22,6 +22,7 @@ static void ax_gameserver_query_resource_dtor( zend_rsrc_list_entry *rsrc TSRMLS
 }
 
 zend_function_entry ax_gameserver_query_functions[] = {
+	PHP_FE( axgsq_debug, NULL )
 	PHP_FE( axgsq_connect, NULL )
 	PHP_FE( axgsq_disconnect, NULL )
 	PHP_FE( axgsq_get_serverinfo, NULL )
@@ -106,12 +107,24 @@ PHP_MINFO_FUNCTION(ax_gameserver_query)
 }
 
 
+PHP_FUNCTION(axgsq_debug)
+{
+	int iDebug;
+	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "l", &iDebug ) == FAILURE )
+	{
+		// Output error message
+		RETURN_NULL();
+	}
+	axgsq_debug( iDebug );
+}
+
 PHP_FUNCTION(axgsq_connect)
 {
 	int iGameServer, iPort, iConnectionString_len;
 	char* cConnectionString;
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "lsl", &iGameServer, &cConnectionString, &iConnectionString_len, &iPort ) == FAILURE )
 	{
+		// Output error message
 		RETURN_NULL();
 	}
 	struct axgsq_res* pResource;
@@ -132,6 +145,7 @@ PHP_FUNCTION(axgsq_disconnect)
 	struct axgsq_res* pResource;
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r", &zResource ) == FAILURE )
 	{
+		// Output error message
 		RETURN_NULL();
 	}
 	ZEND_FETCH_RESOURCE( pResource, struct axgsq_res*, &zResource, -1, "ax_gameserver_query_resource", ax_gameserver_query_resource );
@@ -151,13 +165,14 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	struct axgsq_res* pResource;
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r", &zResource ) == FAILURE )
 	{
+		// Output error message
 		RETURN_NULL();
 	}
 	ZEND_FETCH_RESOURCE( pResource, struct axgsq_res*, &zResource, -1, "ax_gameserver_query_resource", ax_gameserver_query_resource );
 	struct axgsq_serverinfo* pServerInfo = axgsq_get_serverinfo( pResource );
 	if( pServerInfo == NULL )
 	{
-		RETURN_FALSE;
+		RETURN_NULL();
 	}
 	else
 	{
@@ -208,7 +223,7 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			//free( pServerInfo );
 			return;
 			break;
-		default:
+		default: ;
 			//error
 			free( pServerInfo );
 			RETURN_FALSE;

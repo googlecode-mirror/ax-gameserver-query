@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include "ax_gameserver_query.h"
 
-int axgsq_isIpAddress( const char* cConnectionString );
+int iIsDebug = 0;
 
+int axgsq_isIpAddress( const char* cConnectionString );
 #ifdef _WIN32
 int axgsq_send( SOCKET s, const unsigned char *buf, int len, int flags );
 int axgsq_recv( SOCKET s, unsigned char *buf, int len, int flags );
@@ -12,12 +14,20 @@ int axgsq_recv( SOCKET s, unsigned char *buf, int len, int flags );
 int axgsq_send( int s, const unsigned char *buf, int len, int flags );
 int axgsq_recv( int s, unsigned char *buf, int len, int flags );
 #endif /*_WIN32*/
-
+int axgsq_error( const char *fmt, ... );
 unsigned char axgsq_get_byte( unsigned char* cInput, int* iPos );
 short axgsq_get_short( unsigned char* cInput, int* iPos );
 long axgsq_get_long( unsigned char* cInput, int* iPos );
 float axgsq_get_float( unsigned char* cInput, int* iPos );
 unsigned char* axgsq_get_string( unsigned char* cInput, int* iPos );
+
+void axgsq_debug( int iDebug )
+{
+	if( iDebug == 1 )
+		iIsDebug = 1;
+	else if( iDebug == 0 )
+		iIsDebug = 0;
+}
 
 struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString, int iPort )
 {
@@ -26,7 +36,7 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	if( pResource == NULL )
 	{
 		// Memory allocation error
-		printf( "Memory allocation error in axgsq_connect();\n" );
+		axgsq_error( "Memory allocation error in axgsq_connect();\n" );
 		return NULL;
 	}
 	memset( pResource, 0, sizeof( struct axgsq_res ) );
@@ -43,7 +53,7 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 		iSocketProtocol = IPPROTO_UDP;
 		break;
 	default:
-		printf( "Unknown gameserver type given to axgsq_connect();\n" );
+		axgsq_error( "Unknown gameserver type given to axgsq_connect();\n" );
 		return NULL;
 	}
 	pResource->iSocketType = iSocketType;
@@ -55,7 +65,7 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	if( WSAStartup( MAKEWORD( 2, 0 ), &pWSAData ) != 0 )
 	{
 		// Winsock startup error
-		printf( "Winsock starup error in axgsq_connect();\n" );
+		axgsq_error( "Winsock starup error in axgsq_connect();\n" );
 		return NULL;
 	}
 #endif /* _WIN32 */
@@ -64,13 +74,13 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	if( pResource->pSocket == INVALID_SOCKET )
 	{
 		WSACleanup();
-		printf( "Socket creation error in axgsq_connect();\n" );
+		axgsq_error( "Socket creation error in axgsq_connect();\n" );
 		return NULL;
 	}
 #else /* _WIN32 */
 	if( pResource->pSocket < 0 )
 	{
-		printf( "Socket creation error in axgsq_connect();\n" );
+		axgsq_error( "Socket creation error in axgsq_connect();\n" );
 		return NULL;
 	}
 #endif /* _WIN32 */
@@ -82,7 +92,7 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 		struct hostent* pHost;
 		if( ( pHost = gethostbyname( cConnectionString ) ) == NULL )
 		{
-			printf( "Hostname resolution failed in axgsq_connect();\n" );
+			axgsq_error( "Hostname resolution failed in axgsq_connect();\n" );
 			return NULL;
 		}
 		pResource->pSockAddr.sin_addr.s_addr = *((unsigned long*)pHost->h_addr_list[0]);
@@ -92,13 +102,13 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	if( connect( pResource->pSocket, (struct sockaddr*)&pResource->pSockAddr, sizeof( pResource->pSockAddr ) ) == -1 )
 	{
 		WSACleanup();
-		printf( "Socket connection error in axgsq_connect();\n" );
+		axgsq_error( "Socket connection error in axgsq_connect();\n" );
 		return NULL;
 	}
 #else /* _WIN32 */
 	if( connect( pResource->pSocket, (struct sockaddr*)&pResource->pSockAddr, sizeof( pResource->pSockAddr ) ) < 0 )
 	{
-		printf( "Socket connection error in axgsq_connect();\n" );
+		axgsq_error( "Socket connection error in axgsq_connect();\n" );
 		return NULL;
 	}
 #endif /* _WIN32 */
@@ -127,7 +137,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 		struct axgsq_serverinfo* pServerInfo = (struct axgsq_serverinfo*) malloc( sizeof(struct axgsq_serverinfo) );
 		if( pServerInfo == NULL )
 		{
-			printf( "Memory allocation error in axgsq_get_serverinfo()\n" );
+			axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 			return NULL;
 		}
 		memset( pServerInfo, 0, sizeof(struct axgsq_serverinfo) );
@@ -141,25 +151,25 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
 			if( pSI == NULL )
 			{
-				printf( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			memset( pSI, 0, sizeof(struct axgsq_serverinfo_source) );
 			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFF\xFF\xFF\xFF\x54Source Engine Query\x00", 25, 0 ) == -1 )
 			{
-				printf( "Socket send error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			cInput = (unsigned char*) malloc( 2049 );
 			if( cInput == NULL )
 			{
-				printf( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			memset( cInput, 0, 2049 );
 			if( axgsq_recv( pResource->pSocket, (unsigned char *)cInput, 2048, 0 ) < 1 )
 			{
-				printf( "Socket recv error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			iPos = 5;
@@ -183,13 +193,13 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			// "\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF"
 			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF", 9, 0 ) == -1 )
 			{
-				printf( "Socket send error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			memset( cInput, 0, 2049 );
 			if( axgsq_recv( pResource->pSocket, (unsigned char *)cInput, 2048, 0 ) < 1 )
 			{
-				printf( "Socket recv error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			iPos = 5;
@@ -204,19 +214,19 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			unsigned char *cTemp = (unsigned char *) malloc( 10 );
 			if( cTemp == NULL )
 			{
-				printf( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			sprintf( (char *)cTemp, "\xFF\xFF\xFF\xFF\x55%s", cChallenge );
 			if( axgsq_send( pResource->pSocket, (const unsigned char *)cTemp, 9, 0 ) == -1 )
 			{
-				printf( "Socket send error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			memset( cInput, 0, 2049 );
 			if( axgsq_recv( pResource->pSocket, cInput, 2048, 0 ) < 1 )
 			{
-				printf( "Socket recv error in axgsq_get_serverinfo()\n" );
+				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
 			iPos = 5;
@@ -233,14 +243,14 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 		}
 		else
 		{
-			printf( "Unknown gameserver type given to axgsq_serverinfo();\n" );
+			axgsq_error( "Unknown gameserver type given to axgsq_serverinfo();\n" );
 			return NULL;
 		}
 		return pServerInfo;
 	}
 	else
 	{
-		printf( "Invalid resource passed to axgsq_get_serverinfo()\n" );
+		axgsq_error( "Invalid resource passed to axgsq_get_serverinfo()\n" );
 		return NULL;
 	}
 }
@@ -278,7 +288,7 @@ int axgsq_send( int s, const unsigned char *buf, int len, int flags )
 	FD_ZERO( &set );
 	FD_SET( s, &set );
 	int tmp = select( s+1, NULL, &set, NULL, &tv );
-	//printf( "send int = %d\n", tmp );
+	//axgsq_error( "send int = %d\n", tmp );
 	if( tmp > 0 )
 		return send( s, (const char *)buf, len, flags );
 	return -1;
@@ -297,10 +307,24 @@ int axgsq_recv( int s, unsigned char *buf, int len, int flags )
 	FD_ZERO( &set );
 	FD_SET( s, &set );
 	int tmp = select( s+1, &set, NULL, NULL, &tv );
-	//printf( "recv int = %d\n", tmp );
+	//axgsq_error( "recv int = %d\n", tmp );
 	if( tmp > 0 )
 		return recv( s, (char *)buf, len, flags );
 	return -1;
+}
+
+int axgsq_error( const char *fmt, ... )
+{
+	if( iIsDebug == 1 )
+	{
+		int ret;
+		va_list	ap;
+		va_start( ap, fmt );
+		ret = vprintf( fmt, ap );
+		va_end( ap );
+		return ret;
+	}
+	return 0;
 }
 
 unsigned char axgsq_get_byte( unsigned char* cInput, int* iPos )
@@ -340,7 +364,7 @@ unsigned char* axgsq_get_string( unsigned char* cInput, int* iPos )
 		unsigned char* Ret = (unsigned char*) malloc( iStrLen + 1 );
 		if( Ret == NULL )
 		{
-			printf( "Memory allocation error in axgsq_get_string();\n" );
+			axgsq_error( "Memory allocation error in axgsq_get_string();\n" );
 			return NULL;
 		}
 		int x;

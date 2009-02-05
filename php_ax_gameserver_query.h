@@ -20,6 +20,7 @@ PHP_RINIT_FUNCTION(ax_gameserver_query);
 PHP_RSHUTDOWN_FUNCTION(ax_gameserver_query);
 PHP_MINFO_FUNCTION(ax_gameserver_query);
 
+PHP_FUNCTION(axgsq_debug);
 PHP_FUNCTION(axgsq_connect);
 PHP_FUNCTION(axgsq_disconnect);
 PHP_FUNCTION(axgsq_get_serverinfo);
