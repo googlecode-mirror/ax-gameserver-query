@@ -63,7 +63,7 @@ struct axgsq_serverinfo_source
 };
 
 
-
+void axgsq_debug( int sDebug );
 struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString, int iPort );
 int axgsq_disconnect( struct axgsq_res* pResource );
 struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource );
