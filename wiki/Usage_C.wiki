@@ -1,0 +1,53 @@
+#summary One-sentence summary of this page.
+
+==Functions==
+----
+
+===axgsq_debug===
+
+*Description*<br>
+{{{
+void axgsq_debug( int iDebug )
+}}}
+*axgsq_debug()* enables or disables the output of debugging information.
+<br><br><br>
+
+*Parameters*<br>
+_iDebug_<br>
+{{{
+If iDebug is equal to 1 then debugging information will be output to the console.
+If iDebug is equal to 0 then debugging information will not be output to the console.
+}}}
+<br>
+
+*Return Values*<br>
+void
+<br><br>
+
+===axgsq_connect===
+
+*Description*<br>
+{{{
+struct axgsq_res * axgsq_connect( int iGameServer, const char * cConnectionString, int iPort )
+}}}
+*axgsq_connect()* creates a connection to a game server and makes it ready to start sending queries.
+<br><br><br>
+
+*Parameters*<br>
+_iGameServer_<br>
+{{{
+This should be one of the defined enums i.e. AXGSQ_SOURCE or AXGSQ_THESHIP.
+}}}
+_cConnectionString_<br>
+{{{
+This can be eather an IP address or a hostname the function automaticly converts hostnames to IP addresses.
+}}}
+_iPort_<br>
+{{{
+This should be the port that the gameserver is listening on.
+}}}
+<br>
+
+*Return Values*<br>
+struct axgsq_res *
+<br><br>
