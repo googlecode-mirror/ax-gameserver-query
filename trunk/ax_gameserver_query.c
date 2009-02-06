@@ -146,13 +146,10 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 		unsigned char* cInput = NULL;
 		int iPos = 0;
 		// Creating a switch() using if/else if/else syntax due to incompatibility with Dev-C++ (gcc)
-		if( pResource->iGameServer == AXGSQ_SOURCE || pResource->iGameServer == AXGSQ_THESHIP )
+		if( pResource->iGameServer == AXGSQ_SOURCE )
 		{
 			pServerInfo->iGameServer = pResource->iGameServer;
-			if( pResource->iGameServer == AXGSQ_SOURCE )
-				struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
-			else if( pResource->iGameServer == AXGSQ_THESHIP )
-				struct axgsq_serverinfo_theship* pSI = (struct axgsq_serverinfo_theship*) malloc( sizeof(struct axgsq_serverinfo_theship) );
+			struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
 			if( pSI == NULL )
 			{
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
@@ -190,12 +187,105 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			pSI->OS = axgsq_get_byte( cInput, &iPos );
 			pSI->Password = axgsq_get_byte( cInput, &iPos );
 			pSI->Secure = axgsq_get_byte( cInput, &iPos );
-			if( pResource->iGameServer == AXGSQ_THESHIP )
+			pSI->GameVersion = axgsq_get_string( cInput, &iPos );
+			// A2S_SERVERQUERY_GETCHALLENGE - 
+			//   Due to a valve update breaking the protocol for 
+			//   goldsource servers we use an invalid A2S_PLAYER request.
+			// "\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF"
+			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFF\xFF\xFF\xFF\x55\xFF\xFF\xFF\xFF", 9, 0 ) == -1 )
 			{
-				pSI->GameMode = axgsq_get_byte( cInput, &iPos );
-				pSI->WitnessCount = axgsq_get_byte( cInput, &iPos );
-				pSI->WitnessTime = axgsq_get_byte( cInput, &iPos );
+				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
+				return NULL;
 			}
+			memset( cInput, 0, 2049 );
+			if( axgsq_recv( pResource->pSocket, (unsigned char *)cInput, 2048, 0 ) < 1 )
+			{
+				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			iPos = 5;
+			char cChallenge[5];
+			cChallenge[0] = axgsq_get_byte( cInput, &iPos );
+			cChallenge[1] = axgsq_get_byte( cInput, &iPos );
+			cChallenge[2] = axgsq_get_byte( cInput, &iPos );
+			cChallenge[3] = axgsq_get_byte( cInput, &iPos );
+			cChallenge[4] = 0;
+			// A2S_PLAYER
+			// "\xFF\xFF\xFF\xFF\x55%s"
+			unsigned char *cTemp = (unsigned char *) malloc( 10 );
+			if( cTemp == NULL )
+			{
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			sprintf( (char *)cTemp, "\xFF\xFF\xFF\xFF\x55%s", cChallenge );
+			if( axgsq_send( pResource->pSocket, (const unsigned char *)cTemp, 9, 0 ) == -1 )
+			{
+				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			memset( cInput, 0, 2049 );
+			if( axgsq_recv( pResource->pSocket, cInput, 2048, 0 ) < 1 )
+			{
+				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			iPos = 5;
+			pSI->NumPlayers = axgsq_get_byte( cInput, &iPos );
+			int x;
+			for( x = 0; x < pSI->NumPlayers; x++ )
+			{
+				pSI->Players[x].Index = axgsq_get_byte( cInput, &iPos );
+				pSI->Players[x].PlayerName = axgsq_get_string( cInput, &iPos );
+				pSI->Players[x].Kills = axgsq_get_long( cInput, &iPos );
+				pSI->Players[x].TimeConnected = axgsq_get_float( cInput, &iPos );
+			}
+			pServerInfo->pSI = pSI;
+		}
+		else if( pResource->iGameServer == AXGSQ_THESHIP )
+		{
+			pServerInfo->iGameServer = pResource->iGameServer;
+			struct axgsq_serverinfo_theship* pSI = (struct axgsq_serverinfo_theship*) malloc( sizeof(struct axgsq_serverinfo_theship) );
+			if( pSI == NULL )
+			{
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			memset( pSI, 0, sizeof( pSI ) );
+			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFF\xFF\xFF\xFF\x54Source Engine Query\x00", 25, 0 ) == -1 )
+			{
+				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			cInput = (unsigned char*) malloc( 2049 );
+			if( cInput == NULL )
+			{
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			memset( cInput, 0, 2049 );
+			if( axgsq_recv( pResource->pSocket, (unsigned char *)cInput, 2048, 0 ) < 1 )
+			{
+				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			iPos = 5;
+			pSI->Version = axgsq_get_byte( cInput, &iPos );
+			pSI->ServerName = axgsq_get_string( cInput, &iPos );
+			pSI->Map = axgsq_get_string( cInput, &iPos );
+			pSI->GameDirectory = axgsq_get_string( cInput, &iPos );
+			pSI->GameDescription = axgsq_get_string( cInput, &iPos );
+			pSI->AppID = axgsq_get_short( cInput, &iPos );
+			pSI->NumberOfPlayers = axgsq_get_byte( cInput, &iPos );
+			pSI->MaximumPlayers = axgsq_get_byte( cInput, &iPos );
+			pSI->NumberOfBots = axgsq_get_byte( cInput, &iPos );
+			pSI->Dedicated = axgsq_get_byte( cInput, &iPos );
+			pSI->OS = axgsq_get_byte( cInput, &iPos );
+			pSI->Password = axgsq_get_byte( cInput, &iPos );
+			pSI->Secure = axgsq_get_byte( cInput, &iPos );
+			pSI->GameMode = axgsq_get_byte( cInput, &iPos );
+			pSI->WitnessCount = axgsq_get_byte( cInput, &iPos );
+			pSI->WitnessTime = axgsq_get_byte( cInput, &iPos );
 			pSI->GameVersion = axgsq_get_string( cInput, &iPos );
 			// A2S_SERVERQUERY_GETCHALLENGE - 
 			//   Due to a valve update breaking the protocol for 
