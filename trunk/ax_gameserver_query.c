@@ -49,6 +49,7 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	switch( iGameServer )
 	{
 	case AXGSQ_SOURCE:
+	case AXGSQ_THESHIP:
 		iSocketType = SOCK_DGRAM;
 		iSocketProtocol = IPPROTO_UDP;
 		break;
@@ -145,16 +146,19 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 		unsigned char* cInput = NULL;
 		int iPos = 0;
 		// Creating a switch() using if/else if/else syntax due to incompatibility with Dev-C++ (gcc)
-		if( pResource->iGameServer == AXGSQ_SOURCE ) 
+		if( pResource->iGameServer == AXGSQ_SOURCE || pResource->iGameServer == AXGSQ_THESHIP )
 		{
-			pServerInfo->iGameServer = AXGSQ_SOURCE;
-			struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
+			pServerInfo->iGameServer = pResource->iGameServer;
+			if( pResource->iGameServer == AXGSQ_SOURCE )
+				struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
+			else if( pResource->iGameServer == AXGSQ_THESHIP )
+				struct axgsq_serverinfo_theship* pSI = (struct axgsq_serverinfo_theship*) malloc( sizeof(struct axgsq_serverinfo_theship) );
 			if( pSI == NULL )
 			{
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
-			memset( pSI, 0, sizeof(struct axgsq_serverinfo_source) );
+			memset( pSI, 0, sizeof( pSI ) );
 			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFF\xFF\xFF\xFF\x54Source Engine Query\x00", 25, 0 ) == -1 )
 			{
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
@@ -172,21 +176,47 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
-			iPos = 5;
-			pSI->Version = axgsq_get_byte( cInput, &iPos );
-			pSI->ServerName = axgsq_get_string( cInput, &iPos );
-			pSI->Map = axgsq_get_string( cInput, &iPos );
-			pSI->GameDirectory = axgsq_get_string( cInput, &iPos );
-			pSI->GameDescription = axgsq_get_string( cInput, &iPos );
-			pSI->AppID = axgsq_get_short( cInput, &iPos );
-			pSI->NumberOfPlayers = axgsq_get_byte( cInput, &iPos );
-			pSI->MaximumPlayers = axgsq_get_byte( cInput, &iPos );
-			pSI->NumberOfBots = axgsq_get_byte( cInput, &iPos );
-			pSI->Dedicated = axgsq_get_byte( cInput, &iPos );
-			pSI->OS = axgsq_get_byte( cInput, &iPos );
-			pSI->Password = axgsq_get_byte( cInput, &iPos );
-			pSI->Secure = axgsq_get_byte( cInput, &iPos );
-			pSI->GameVersion = axgsq_get_string( cInput, &iPos );
+			if( pResource->iGameServer == AXGSQ_SOURCE )
+			{
+				iPos = 4;
+				pSI->Type = axgsq_get_byte( cInput, &iPos );
+				pSI->Version = axgsq_get_byte( cInput, &iPos );
+				pSI->ServerName = axgsq_get_string( cInput, &iPos );
+				pSI->Map = axgsq_get_string( cInput, &iPos );
+				pSI->GameDirectory = axgsq_get_string( cInput, &iPos );
+				pSI->GameDescription = axgsq_get_string( cInput, &iPos );
+				pSI->AppID = axgsq_get_short( cInput, &iPos );
+				pSI->NumberOfPlayers = axgsq_get_byte( cInput, &iPos );
+				pSI->MaximumPlayers = axgsq_get_byte( cInput, &iPos );
+				pSI->NumberOfBots = axgsq_get_byte( cInput, &iPos );
+				pSI->Dedicated = axgsq_get_byte( cInput, &iPos );
+				pSI->OS = axgsq_get_byte( cInput, &iPos );
+				pSI->Password = axgsq_get_byte( cInput, &iPos );
+				pSI->Secure = axgsq_get_byte( cInput, &iPos );
+				pSI->GameVersion = axgsq_get_string( cInput, &iPos );
+			}
+			else if( pResource->iGameServer == AXGSQ_THESHIP )
+			{
+				iPos = 4;
+				pSI->Type = axgsq_get_byte( cInput, &iPos );
+				pSI->Version = axgsq_get_byte( cInput, &iPos );
+				pSI->ServerName = axgsq_get_string( cInput, &iPos );
+				pSI->Map = axgsq_get_string( cInput, &iPos );
+				pSI->GameDirectory = axgsq_get_string( cInput, &iPos );
+				pSI->GameDescription = axgsq_get_string( cInput, &iPos );
+				pSI->AppID = axgsq_get_short( cInput, &iPos );
+				pSI->NumberOfPlayers = axgsq_get_byte( cInput, &iPos );
+				pSI->MaximumPlayers = axgsq_get_byte( cInput, &iPos );
+				pSI->NumberOfBots = axgsq_get_byte( cInput, &iPos );
+				pSI->Dedicated = axgsq_get_byte( cInput, &iPos );
+				pSI->OS = axgsq_get_byte( cInput, &iPos );
+				pSI->Password = axgsq_get_byte( cInput, &iPos );
+				pSI->Secure = axgsq_get_byte( cInput, &iPos );
+				pSI->GameMode = axgsq_get_byte( cInput, &iPos );
+				pSI->WitnessCount = axgsq_get_byte( cInput, &iPos );
+				pSI->WitnessTime = axgsq_get_byte( cInput, &iPos );
+				pSI->GameVersion = axgsq_get_string( cInput, &iPos );
+			}
 			// A2S_SERVERQUERY_GETCHALLENGE - 
 			//   Due to a valve update breaking the protocol for 
 			//   goldsource servers we use an invalid A2S_PLAYER request.
