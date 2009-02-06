@@ -51,7 +51,7 @@ This should be the port that the gameserver is listening on.
 <br>
 
 *Return Values*<br>
-struct axgsq_res *
+struct axgsq_res `*`
 <br><br>
 
 ----
