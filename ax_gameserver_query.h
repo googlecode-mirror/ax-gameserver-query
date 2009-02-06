@@ -27,7 +27,8 @@ struct axgsq_res
 
 enum
 {
-	AXGSQ_SOURCE
+	AXGSQ_SOURCE,
+	AXGSQ_THESHIP
 };
 
 struct axgsq_serverinfo
@@ -38,21 +39,52 @@ struct axgsq_serverinfo
 
 struct axgsq_serverinfo_source
 {
-	int Version;
+	unsigned char Type;
+	unsigned char Version;
 	unsigned char* ServerName;
 	unsigned char* Map;
 	unsigned char* GameDirectory;
 	unsigned char* GameDescription;
-	int AppID;
-	int NumberOfPlayers;
-	int MaximumPlayers;
-	int NumberOfBots;
+	unsigned short AppID;
+	unsigned char NumberOfPlayers;
+	unsigned char MaximumPlayers;
+	unsigned char NumberOfBots;
 	unsigned char Dedicated;
 	unsigned char OS;
-	int Password;
-	int Secure;
+	unsigned char Password;
+	unsigned char Secure;
 	unsigned char* GameVersion;
-	int NumPlayers;
+	unsigned char NumPlayers;
+	struct
+	{
+		int Index;
+		unsigned char* PlayerName;
+		int Kills;
+		float TimeConnected;
+	} Players[64];
+};
+
+struct axgsq_serverinfo_theship
+{
+	unsigned char Type;
+	unsigned char Version;
+	unsigned char* ServerName;
+	unsigned char* Map;
+	unsigned char* GameDirectory;
+	unsigned char* GameDescription;
+	unsigned short AppID;
+	unsigned char NumberOfPlayers;
+	unsigned char MaximumPlayers;
+	unsigned char NumberOfBots;
+	unsigned char Dedicated;
+	unsigned char OS;
+	unsigned char Password;
+	unsigned char Secure;
+	unsigned char GameMode;
+	unsigned char WitnessCount;
+	unsigned char WitnessTime;
+	unsigned char* GameVersion;
+	unsigned char NumPlayers;
 	struct
 	{
 		int Index;
