@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2009 Matthew Jeffries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -177,30 +201,32 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	}
 	else
 	{
-		if( pServerInfo->iGameServer == AXGSQ_SOURCE )
+		if( pServerInfo->GameServer == AXGSQ_SOURCE )
 		{
-			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->pSI;
+			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->ServerInfo;
 			char temp[2];
 			temp[1] = 0;
+			zval* zServerInfo;
+			ALLOC_INIT_ZVAL( zServerInfo );
+			array_init( zServerInfo );
 			array_init( return_value );
-			add_assoc_long( return_value, "Version", pSIs->Version );
-			add_assoc_string( return_value, "ServerName", pSIs->ServerName, 1 );
-			add_assoc_string( return_value, "Map", pSIs->Map, 1 );
-			add_assoc_string( return_value, "GameDirectory", pSIs->GameDirectory, 1 );
-			add_assoc_string( return_value, "GameDescription", pSIs->GameDescription, 1 );
-			add_assoc_long( return_value, "AppID", pSIs->AppID );
-			add_assoc_long( return_value, "NumberOfPlayers", pSIs->NumberOfPlayers );
-			add_assoc_long( return_value, "MaximumPlayers", pSIs->MaximumPlayers );
-			add_assoc_long( return_value, "NumberOfBots", pSIs->NumberOfBots );
+			add_assoc_long( zServerInfo, "Version", pSIs->Version );
+			add_assoc_string( zServerInfo, "ServerName", pSIs->ServerName, 1 );
+			add_assoc_string( zServerInfo, "Map", pSIs->Map, 1 );
+			add_assoc_string( zServerInfo, "GameDirectory", pSIs->GameDirectory, 1 );
+			add_assoc_string( zServerInfo, "GameDescription", pSIs->GameDescription, 1 );
+			add_assoc_long( zServerInfo, "AppID", pSIs->AppID );
+			add_assoc_long( zServerInfo, "NumberOfPlayers", pSIs->NumberOfPlayers );
+			add_assoc_long( zServerInfo, "MaximumPlayers", pSIs->MaximumPlayers );
+			add_assoc_long( zServerInfo, "NumberOfBots", pSIs->NumberOfBots );
 			temp[0] = pSIs->Dedicated;
-			add_assoc_stringl( return_value, "Dedicated", temp, 1, 1 );
+			add_assoc_stringl( zServerInfo, "Dedicated", temp, 1, 1 );
 			temp[0] = pSIs->OS;
-			add_assoc_stringl( return_value, "OS", temp, 1, 1 );
-			add_assoc_long( return_value, "Password", pSIs->Password );
-			add_assoc_long( return_value, "Secure", pSIs->Secure );
-			add_assoc_string( return_value, "GameVersion", pSIs->GameVersion, 1 );
-			add_assoc_long( return_value, "NumPlayers", pSIs->NumPlayers );
-
+			add_assoc_stringl( zServerInfo, "OS", temp, 1, 1 );
+			add_assoc_long( zServerInfo, "Password", pSIs->Password );
+			add_assoc_long( zServerInfo, "Secure", pSIs->Secure );
+			add_assoc_string( zServerInfo, "GameVersion", pSIs->GameVersion, 1 );
+			add_assoc_long( zServerInfo, "NumPlayers", pSIs->NumPlayers );
 			zval* zPlayerArray;
 			zval* zTempPArray;
 			ALLOC_INIT_ZVAL( zPlayerArray );
@@ -216,39 +242,43 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
 			}
-			add_assoc_zval( return_value, "Players", zPlayerArray );
+			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
+			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
+			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
 
 			//delete [] temp;
 			//free( pSIs );
 			//free( pServerInfo );
 		}
-		else if( pServerInfo->iGameServer == AXGSQ_THESHIP )
+		else if( pServerInfo->GameServer == AXGSQ_THESHIP )
 		{
-			struct axgsq_serverinfo_theship* pSIs = (struct axgsq_serverinfo_theship*) pServerInfo->pSI;
+			struct axgsq_serverinfo_theship* pSIs = (struct axgsq_serverinfo_theship*) pServerInfo->ServerInfo;
 			char temp[2];
 			temp[1] = 0;
+			zval* zServerInfo;
+			ALLOC_INIT_ZVAL( zServerInfo );
+			array_init( zServerInfo );
 			array_init( return_value );
-			add_assoc_long( return_value, "Version", pSIs->Version );
-			add_assoc_string( return_value, "ServerName", pSIs->ServerName, 1 );
-			add_assoc_string( return_value, "Map", pSIs->Map, 1 );
-			add_assoc_string( return_value, "GameDirectory", pSIs->GameDirectory, 1 );
-			add_assoc_string( return_value, "GameDescription", pSIs->GameDescription, 1 );
-			add_assoc_long( return_value, "AppID", pSIs->AppID );
-			add_assoc_long( return_value, "NumberOfPlayers", pSIs->NumberOfPlayers );
-			add_assoc_long( return_value, "MaximumPlayers", pSIs->MaximumPlayers );
-			add_assoc_long( return_value, "NumberOfBots", pSIs->NumberOfBots );
+			add_assoc_long( zServerInfo, "Version", pSIs->Version );
+			add_assoc_string( zServerInfo, "ServerName", pSIs->ServerName, 1 );
+			add_assoc_string( zServerInfo, "Map", pSIs->Map, 1 );
+			add_assoc_string( zServerInfo, "GameDirectory", pSIs->GameDirectory, 1 );
+			add_assoc_string( zServerInfo, "GameDescription", pSIs->GameDescription, 1 );
+			add_assoc_long( zServerInfo, "AppID", pSIs->AppID );
+			add_assoc_long( zServerInfo, "NumberOfPlayers", pSIs->NumberOfPlayers );
+			add_assoc_long( zServerInfo, "MaximumPlayers", pSIs->MaximumPlayers );
+			add_assoc_long( zServerInfo, "NumberOfBots", pSIs->NumberOfBots );
 			temp[0] = pSIs->Dedicated;
-			add_assoc_stringl( return_value, "Dedicated", temp, 1, 1 );
+			add_assoc_stringl( zServerInfo, "Dedicated", temp, 1, 1 );
 			temp[0] = pSIs->OS;
-			add_assoc_stringl( return_value, "OS", temp, 1, 1 );
-			add_assoc_long( return_value, "Password", pSIs->Password );
-			add_assoc_long( return_value, "Secure", pSIs->Secure );
-			add_assoc_long( return_value, "GameMode", pSIs->GameMode );
-			add_assoc_long( return_value, "WitnessCount", pSIs->WitnessCount );
-			add_assoc_long( return_value, "WitnessTime", pSIs->WitnessTime );
-			add_assoc_string( return_value, "GameVersion", pSIs->GameVersion, 1 );
-			add_assoc_long( return_value, "NumPlayers", pSIs->NumPlayers );
-
+			add_assoc_stringl( zServerInfo, "OS", temp, 1, 1 );
+			add_assoc_long( zServerInfo, "Password", pSIs->Password );
+			add_assoc_long( zServerInfo, "Secure", pSIs->Secure );
+			add_assoc_long( zServerInfo, "GameMode", pSIs->GameMode );
+			add_assoc_long( zServerInfo, "WitnessCount", pSIs->WitnessCount );
+			add_assoc_long( zServerInfo, "WitnessTime", pSIs->WitnessTime );
+			add_assoc_string( zServerInfo, "GameVersion", pSIs->GameVersion, 1 );
+			add_assoc_long( zServerInfo, "NumPlayers", pSIs->NumPlayers );
 			zval* zPlayerArray;
 			zval* zTempPArray;
 			ALLOC_INIT_ZVAL( zPlayerArray );
@@ -264,7 +294,9 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
 			}
-			add_assoc_zval( return_value, "Players", zPlayerArray );
+			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
+			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
+			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
 
 			//delete [] temp;
 			//free( pSIs );

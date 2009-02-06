@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2009 Matthew Jeffries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -148,7 +172,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 		// Creating a switch() using if/else if/else syntax due to incompatibility with Dev-C++ (gcc)
 		if( pResource->iGameServer == AXGSQ_SOURCE )
 		{
-			pServerInfo->iGameServer = pResource->iGameServer;
+			pServerInfo->GameServer = pResource->iGameServer;
 			struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
 			if( pSI == NULL )
 			{
@@ -240,11 +264,11 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				pSI->Players[x].Kills = axgsq_get_long( cInput, &iPos );
 				pSI->Players[x].TimeConnected = axgsq_get_float( cInput, &iPos );
 			}
-			pServerInfo->pSI = pSI;
+			pServerInfo->ServerInfo = pSI;
 		}
 		else if( pResource->iGameServer == AXGSQ_THESHIP )
 		{
-			pServerInfo->iGameServer = pResource->iGameServer;
+			pServerInfo->GameServer = pResource->iGameServer;
 			struct axgsq_serverinfo_theship* pSI = (struct axgsq_serverinfo_theship*) malloc( sizeof(struct axgsq_serverinfo_theship) );
 			if( pSI == NULL )
 			{
@@ -339,7 +363,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				pSI->Players[x].Kills = axgsq_get_long( cInput, &iPos );
 				pSI->Players[x].TimeConnected = axgsq_get_float( cInput, &iPos );
 			}
-			pServerInfo->pSI = pSI;
+			pServerInfo->ServerInfo = pSI;
 		}
 		else
 		{
