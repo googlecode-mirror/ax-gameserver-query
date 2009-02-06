@@ -39,7 +39,6 @@ struct axgsq_serverinfo
 
 struct axgsq_serverinfo_source
 {
-	unsigned char Type;
 	unsigned char Version;
 	unsigned char* ServerName;
 	unsigned char* Map;
@@ -66,7 +65,6 @@ struct axgsq_serverinfo_source
 
 struct axgsq_serverinfo_theship
 {
-	unsigned char Type;
 	unsigned char Version;
 	unsigned char* ServerName;
 	unsigned char* Map;

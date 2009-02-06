@@ -179,7 +179,11 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 		switch( pServerInfo->iGameServer )
 		{
 		case AXGSQ_SOURCE: ; // Yes the semi-colon is ment to be there for gcc compiler issues
-			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->pSI;
+		case AXGSQ_THESHIP: ;
+			if( pServerInfo->iGameServer == AXGSQ_SOURCE )
+				struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->pSI;
+			else if( pServerInfo->iGameServer == AXGSQ_THESHIP )
+				struct axgsq_serverinfo_theship* pSIs = (struct axgsq_serverinfo_theship*) pServerInfo->pSI;
 			char temp[2];
 			temp[1] = 0;
 			array_init( return_value );
@@ -198,6 +202,12 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			add_assoc_stringl( return_value, "OS", temp, 1, 1 );
 			add_assoc_long( return_value, "Password", pSIs->Password );
 			add_assoc_long( return_value, "Secure", pSIs->Secure );
+			if( pServerInfo->iGameServer == AXGSQ_THESHIP )
+			{
+				add_assoc_long( return_value, "GameMode", pSIs->GameMode );
+				add_assoc_long( return_value, "WitnessCount", pSIs->WitnessCount );
+				add_assoc_long( return_value, "WitnessTime", pSIs->WitnessTime );
+			}
 			add_assoc_string( return_value, "GameVersion", pSIs->GameVersion, 1 );
 			add_assoc_long( return_value, "NumPlayers", pSIs->NumPlayers );
 
