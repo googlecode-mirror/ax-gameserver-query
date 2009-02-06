@@ -73,6 +73,7 @@ PHP_MINIT_FUNCTION(ax_gameserver_query)
 	ax_gameserver_query_resource = zend_register_list_destructors_ex( ax_gameserver_query_resource_dtor, NULL, "ax_gameserver_query resource", module_number );
 	//REGISTER_LONG_CONSTANT( "AXGSQ_UNKNOWN", AXGSQ_UNKNOWN, CONST_CS|CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT( "AXGSQ_SOURCE", AXGSQ_SOURCE, CONST_CS|CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT( "AXGSQ_THESHIP", AXGSQ_THESHIP, CONST_CS|CONST_PERSISTENT );
 	return SUCCESS;
 }
 
@@ -176,14 +177,9 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	}
 	else
 	{
-		switch( pServerInfo->iGameServer )
+		if( pServerInfo->iGameServer == AXGSQ_SOURCE )
 		{
-		case AXGSQ_SOURCE: ; // Yes the semi-colon is ment to be there for gcc compiler issues
-		case AXGSQ_THESHIP: ;
-			if( pServerInfo->iGameServer == AXGSQ_SOURCE )
-				struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->pSI;
-			else if( pServerInfo->iGameServer == AXGSQ_THESHIP )
-				struct axgsq_serverinfo_theship* pSIs = (struct axgsq_serverinfo_theship*) pServerInfo->pSI;
+			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->pSI;
 			char temp[2];
 			temp[1] = 0;
 			array_init( return_value );
@@ -202,12 +198,6 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			add_assoc_stringl( return_value, "OS", temp, 1, 1 );
 			add_assoc_long( return_value, "Password", pSIs->Password );
 			add_assoc_long( return_value, "Secure", pSIs->Secure );
-			if( pServerInfo->iGameServer == AXGSQ_THESHIP )
-			{
-				add_assoc_long( return_value, "GameMode", pSIs->GameMode );
-				add_assoc_long( return_value, "WitnessCount", pSIs->WitnessCount );
-				add_assoc_long( return_value, "WitnessTime", pSIs->WitnessTime );
-			}
 			add_assoc_string( return_value, "GameVersion", pSIs->GameVersion, 1 );
 			add_assoc_long( return_value, "NumPlayers", pSIs->NumPlayers );
 
@@ -231,9 +221,57 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			//delete [] temp;
 			//free( pSIs );
 			//free( pServerInfo );
-			return;
-			break;
-		default: ;
+		}
+		else if( pServerInfo->iGameServer == AXGSQ_THESHIP )
+		{
+			struct axgsq_serverinfo_theship* pSIs = (struct axgsq_serverinfo_theship*) pServerInfo->pSI;
+			char temp[2];
+			temp[1] = 0;
+			array_init( return_value );
+			add_assoc_long( return_value, "Version", pSIs->Version );
+			add_assoc_string( return_value, "ServerName", pSIs->ServerName, 1 );
+			add_assoc_string( return_value, "Map", pSIs->Map, 1 );
+			add_assoc_string( return_value, "GameDirectory", pSIs->GameDirectory, 1 );
+			add_assoc_string( return_value, "GameDescription", pSIs->GameDescription, 1 );
+			add_assoc_long( return_value, "AppID", pSIs->AppID );
+			add_assoc_long( return_value, "NumberOfPlayers", pSIs->NumberOfPlayers );
+			add_assoc_long( return_value, "MaximumPlayers", pSIs->MaximumPlayers );
+			add_assoc_long( return_value, "NumberOfBots", pSIs->NumberOfBots );
+			temp[0] = pSIs->Dedicated;
+			add_assoc_stringl( return_value, "Dedicated", temp, 1, 1 );
+			temp[0] = pSIs->OS;
+			add_assoc_stringl( return_value, "OS", temp, 1, 1 );
+			add_assoc_long( return_value, "Password", pSIs->Password );
+			add_assoc_long( return_value, "Secure", pSIs->Secure );
+			add_assoc_long( return_value, "GameMode", pSIs->GameMode );
+			add_assoc_long( return_value, "WitnessCount", pSIs->WitnessCount );
+			add_assoc_long( return_value, "WitnessTime", pSIs->WitnessTime );
+			add_assoc_string( return_value, "GameVersion", pSIs->GameVersion, 1 );
+			add_assoc_long( return_value, "NumPlayers", pSIs->NumPlayers );
+
+			zval* zPlayerArray;
+			zval* zTempPArray;
+			ALLOC_INIT_ZVAL( zPlayerArray );
+			array_init( zPlayerArray );
+			int x;
+			for( x = 0; x < pSIs->NumPlayers; x++ )
+			{
+				ALLOC_INIT_ZVAL( zTempPArray );
+				array_init( zTempPArray );
+				add_assoc_long( zTempPArray, "Index", pSIs->Players[x].Index );
+				add_assoc_string( zTempPArray, "PlayerName", pSIs->Players[x].PlayerName, 1 );
+				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
+				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
+				add_next_index_zval( zPlayerArray, zTempPArray );
+			}
+			add_assoc_zval( return_value, "Players", zPlayerArray );
+
+			//delete [] temp;
+			//free( pSIs );
+			//free( pServerInfo );
+		}
+		else
+		{
 			//error
 			free( pServerInfo );
 			RETURN_FALSE;
