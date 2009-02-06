@@ -1,4 +1,5 @@
 #summary One-sentence summary of this page.
+#labels Phase-Implementation,Phase-Deploy,Featured
 
 ==Functions==
 ----
@@ -24,6 +25,7 @@ If iDebug is equal to 0 then debugging information will not be output to the con
 void
 <br><br>
 
+----
 ===axgsq_connect===
 
 *Description*<br>
@@ -51,3 +53,5 @@ This should be the port that the gameserver is listening on.
 *Return Values*<br>
 struct axgsq_res *
 <br><br>
+
+----
