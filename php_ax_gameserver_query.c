@@ -320,34 +320,48 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			add_assoc_string( zServerInfo, "Hostname", pSIs->Hostname, 1 );
 			add_assoc_string( zServerInfo, "GameVer", pSIs->GameVer, 1 );
 			add_assoc_string( zServerInfo, "HostPort", pSIs->HostPort, 1 );
-			add_assoc_string( zServerInfo, "MaxPlayers", pSIs->MaxPlayers, 1 );
-			add_assoc_string( zServerInfo, "Password", pSIs->Password, 1 );
+			add_assoc_long( zServerInfo, "MaxPlayers", pSIs->MaxPlayers );
+			add_assoc_long( zServerInfo, "Password", pSIs->Password );
 			add_assoc_string( zServerInfo, "MapName", pSIs->MapName, 1 );
-			add_assoc_string( zServerInfo, "Dedicated", pSIs->Dedicated, 1 );
+			add_assoc_long( zServerInfo, "Dedicated", pSIs->Dedicated );
 			add_assoc_string( zServerInfo, "GameMode", pSIs->GameMode, 1 );
-			add_assoc_string( zServerInfo, "Game_Classic", pSIs->Game_Classic, 1 );
-			add_assoc_string( zServerInfo, "NumPlayers", pSIs->NumPlayers, 1 );
+			add_assoc_long( zServerInfo, "Game_Classic", pSIs->Game_Classic );
+			add_assoc_long( zServerInfo, "NumPlayers", pSIs->NumPlayers );
 			add_assoc_string( zServerInfo, "GameType", pSIs->GameType, 1 );
-			add_assoc_string( zServerInfo, "TeamPlay", pSIs->TeamPlay, 1 );
+			add_assoc_long( zServerInfo, "TeamPlay", pSIs->TeamPlay );
 			add_assoc_string( zServerInfo, "GameVariant", pSIs->GameVariant, 1 );
-			add_assoc_string( zServerInfo, "FragLimit", pSIs->FragLimit, 1 );
-
+			add_assoc_long( zServerInfo, "FragLimit", pSIs->FragLimit );
+			zval* zPlayerArray;
+			zval* zTempPArray;
+			ALLOC_INIT_ZVAL( zPlayerArray );
+			array_init( zPlayerArray );
+			int x;
+			for( x = 0; x < pSIs->NumPlayers; x++ )
+			{
+				ALLOC_INIT_ZVAL( zTempPArray );
+				array_init( zTempPArray );
+				add_assoc_string( zTempPArray, "PlayerName", pSIs->Players[x].PlayerName, 1 );
+				add_assoc_long( zTempPArray, "Score", pSIs->Players[x].Score );
+				add_assoc_string( zTempPArray, "Ping", pSIs->Players[x].Ping, 1 );
+				add_assoc_long( zTempPArray, "Team", pSIs->Players[x].Team );
+				add_next_index_zval( zPlayerArray, zTempPArray );
+				free( pSIs->Players[x].PlayerName );
+				free( pSIs->Players[x].Ping );
+			}
+			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
+			add_assoc_long( zServerInfo, "TeamRedScore", pSIs->TeamRedScore );
+			add_assoc_long( zServerInfo, "TeamBlueScore", pSIs->TeamBlueScore );
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
 			free( pSIs->Hostname );
 			free( pSIs->GameVer );
 			free( pSIs->HostPort );
-			free( pSIs->MaxPlayers );
-			free( pSIs->Password );
 			free( pSIs->MapName );
-			free( pSIs->Dedicated );
 			free( pSIs->GameMode );
-			free( pSIs->Game_Classic );
-			free( pSIs->NumPlayers );
 			free( pSIs->GameType );
-			free( pSIs->TeamPlay );
 			free( pSIs->GameVariant );
-			free( pSIs->FragLimit );
+			free( pSIs->Player_Flags );
+			free( pSIs->Game_Flags );
 		}
 		else
 		{

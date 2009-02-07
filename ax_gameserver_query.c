@@ -79,8 +79,6 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 		break;
 	default:
 		free( pResource );
-		//free( &iSocketType );
-		//free( &iSocketProtocol );
 		axgsq_error( "Unknown gameserver type given to axgsq_connect();\n" );
 		return NULL;
 	}
@@ -93,8 +91,6 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	if( pWSAData == NULL )
 	{
 		free( pResource );
-		//free( &iSocketType );
-		//free( &iSocketProtocol );
 		free( pWSAData );
 	}
 	memset( pWSAData, 0, sizeof( WSADATA ) );
@@ -102,8 +98,6 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	{
 		// Winsock startup error
 		free( pResource );
-		//free( &iSocketType );
-		//free( &iSocketProtocol );
 		free( pWSAData );
 		axgsq_error( "Winsock starup error in axgsq_connect();\n" );
 		return NULL;
@@ -111,8 +105,6 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	free( pWSAData );
 #endif /* _WIN32 */
 	pResource->pSocket = socket( AF_INET, iSocketType, iSocketProtocol );
-	//free( &iSocketType );
-	//free( &iSocketProtocol );
 #ifdef _WIN32
 	if( pResource->pSocket == INVALID_SOCKET )
 	{
@@ -204,7 +196,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -214,7 +205,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -224,7 +214,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -234,7 +223,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -262,7 +250,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -272,7 +259,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -283,7 +269,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				free( cChallenge );
 				axgsq_error( "Mem alloc error\n" );
@@ -301,7 +286,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				free( cChallenge );
 				free( cTemp );
@@ -314,7 +298,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				free( cTemp );
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
@@ -326,7 +309,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -341,9 +323,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				pSI->Players[x].Kills = axgsq_get_long( cInput, &iPos );
 				pSI->Players[x].TimeConnected = axgsq_get_float( cInput, &iPos );
 			}
-			//free( &x );
 			free( cInput );
-			//free( &iPos );
 			pServerInfo->ServerInfo = pSI;
 		}
 		else if( pResource->iGameServer == AXGSQ_THESHIP )
@@ -354,7 +334,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -364,7 +343,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -374,7 +352,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -384,7 +361,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -415,7 +391,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -425,7 +400,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -436,7 +410,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				free( cChallenge );
 				axgsq_error( "Mem alloc error\n" );
@@ -454,7 +427,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				free( cChallenge );
 				free( cTemp );
@@ -467,7 +439,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				free( cTemp );
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
@@ -479,7 +450,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -494,9 +464,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				pSI->Players[x].Kills = axgsq_get_long( cInput, &iPos );
 				pSI->Players[x].TimeConnected = axgsq_get_float( cInput, &iPos );
 			}
-			//free( &x );
 			free( cInput );
-			//free( &iPos );
 			pServerInfo->ServerInfo = pSI;
 		}
 		else if( pResource->iGameServer == AXGSQ_HALO )
@@ -507,7 +475,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -517,7 +484,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -527,7 +493,6 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
 				return NULL;
@@ -537,13 +502,11 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			{
 				free( pServerInfo );
 				free( cInput );
-				//free( &iPos );
 				free( pSI );
 				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
 				return NULL;
 			}
-
-			//printf( "Getting info\n" );
+			unsigned char *cTemp = NULL;
 			iPos = 4;
 			free( axgsq_get_string( cInput, &iPos ) );
 			pSI->Hostname = axgsq_get_string( cInput, &iPos );
@@ -552,38 +515,82 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			free( axgsq_get_string( cInput, &iPos ) );
 			pSI->HostPort = axgsq_get_string( cInput, &iPos );
 			free( axgsq_get_string( cInput, &iPos ) );
-			pSI->MaxPlayers = axgsq_get_string( cInput, &iPos );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->MaxPlayers = atoi( cTemp );
+			free( cTemp );
 			free( axgsq_get_string( cInput, &iPos ) );
-			pSI->Password = axgsq_get_string( cInput, &iPos );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->Password = atoi( cTemp );
+			free( cTemp );
 			free( axgsq_get_string( cInput, &iPos ) );
 			pSI->MapName = axgsq_get_string( cInput, &iPos );
 			free( axgsq_get_string( cInput, &iPos ) );
-			pSI->Dedicated = axgsq_get_string( cInput, &iPos );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->Dedicated = atoi( cTemp );
+			free( cTemp );
 			free( axgsq_get_string( cInput, &iPos ) );
 			pSI->GameMode = axgsq_get_string( cInput, &iPos );
 			free( axgsq_get_string( cInput, &iPos ) );
-			pSI->Game_Classic = axgsq_get_string( cInput, &iPos );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->Game_Classic = atoi( cTemp );
+			free( cTemp );
 			free( axgsq_get_string( cInput, &iPos ) );
-			pSI->NumPlayers = axgsq_get_string( cInput, &iPos );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->NumPlayers = atoi( cTemp );
+			free( cTemp );
 			free( axgsq_get_string( cInput, &iPos ) );
 			pSI->GameType = axgsq_get_string( cInput, &iPos );
 			free( axgsq_get_string( cInput, &iPos ) );
-			pSI->TeamPlay = axgsq_get_string( cInput, &iPos );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->TeamPlay = atoi( cTemp );
+			free( cTemp );
 			free( axgsq_get_string( cInput, &iPos ) );
 			pSI->GameVariant = axgsq_get_string( cInput, &iPos );
 			free( axgsq_get_string( cInput, &iPos ) );
-			pSI->FragLimit = axgsq_get_string( cInput, &iPos );
-			//printf( "Done Getting info\n" );
-
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->FragLimit = atoi( cTemp );
+			free( cTemp );
+			free( axgsq_get_string( cInput, &iPos ) );
+			pSI->Player_Flags = axgsq_get_string( cInput, &iPos );
+			free( axgsq_get_string( cInput, &iPos ) );
+			pSI->Game_Flags = axgsq_get_string( cInput, &iPos );
+			iPos += 3;
+			free( axgsq_get_string( cInput, &iPos ) );
+			free( axgsq_get_string( cInput, &iPos ) );
+			free( axgsq_get_string( cInput, &iPos ) );
+			free( axgsq_get_string( cInput, &iPos ) );
+			iPos += 1;
+			int x;
+			for( x = 0; x < pSI->NumPlayers; x++ )
+			{
+				pSI->Players[x].PlayerName = axgsq_get_string( cInput, &iPos );
+				cTemp = axgsq_get_string( cInput, &iPos );
+				pSI->Players[x].Score = atoi( cTemp );
+				free( cTemp );
+				pSI->Players[x].Ping = axgsq_get_string( cInput, &iPos );
+				cTemp = axgsq_get_string( cInput, &iPos );
+				pSI->Players[x].Team = atoi( cTemp );
+				free( cTemp );
+			}
+			iPos += 2;
+			free( axgsq_get_string( cInput, &iPos ) );
+			free( axgsq_get_string( cInput, &iPos ) );
+			iPos += 1;
+			free( axgsq_get_string( cInput, &iPos ) );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->TeamRedScore = atoi( cTemp );
+			free( cTemp );
+			free( axgsq_get_string( cInput, &iPos ) );
+			cTemp = axgsq_get_string( cInput, &iPos );
+			pSI->TeamBlueScore = atoi( cTemp );
+			free( cTemp );
 			free( cInput );
-			//free( &iPos );
 			pServerInfo->ServerInfo = pSI;
 		}
 		else
 		{
 			free( pServerInfo );
 			free( cInput );
-			//free( &iPos );
 			axgsq_error( "Unknown gameserver type given to axgsq_serverinfo();\n" );
 			return NULL;
 		}
@@ -612,16 +619,11 @@ int axgsq_isIpAddress( const char* cConnectionString )
 		{
 			if( !( ( cConnectionString[x] >= 0x30 && cConnectionString[x] <= 0x39 ) || cConnectionString[x] == 0x2E ) )
 			{
-				//free( &len );
-				//free( &x );
 				return 0;
 			}
 		}
-		//free( &len );
-		//free( &x );
 		return 1;
 	}
-	//free( &len );
 	return 0;
 }
 
@@ -638,7 +640,6 @@ int axgsq_send( int s, const unsigned char *buf, int len, int flags )
 	FD_ZERO( &set );
 	FD_SET( s, &set );
 	int tmp = select( s+1, NULL, &set, NULL, &tv );
-	//axgsq_error( "send int = %d\n", tmp );
 	//free( &set );
 	//free( &tv );
 	if( tmp > 0 )
@@ -659,7 +660,6 @@ int axgsq_recv( int s, unsigned char *buf, int len, int flags )
 	FD_ZERO( &set );
 	FD_SET( s, &set );
 	int tmp = select( s+1, &set, NULL, NULL, &tv );
-	//axgsq_error( "recv int = %d\n", tmp );
 	//free( &set );
 	//free( &tv );
 	if( tmp > 0 )
@@ -724,11 +724,8 @@ unsigned char* axgsq_get_string( unsigned char* cInput, int* iPos )
 		int x;
 		for( x = 0; x <= iStrLen; x++ )
 			Ret[ x ] = cInput[ *iPos + x ];
-		//free( &x );
 		*iPos = *iPos + iStrLen;
-		//free( &iStrLen );
 		return Ret;
 	}
-	//free( &iStrLen );
 	return NULL;
 }
