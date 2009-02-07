@@ -52,7 +52,8 @@ struct axgsq_res
 enum
 {
 	AXGSQ_SOURCE,
-	AXGSQ_THESHIP
+	AXGSQ_THESHIP,
+	AXGSQ_HALO
 };
 
 struct axgsq_serverinfo
@@ -114,6 +115,24 @@ struct axgsq_serverinfo_theship
 		int Kills;
 		float TimeConnected;
 	} Players[64];
+};
+
+struct axgsq_serverinfo_halo
+{
+	unsigned char* Hostname;
+	unsigned char* GameVer;
+	unsigned char* HostPort;
+	unsigned char* MaxPlayers;
+	unsigned char* Password;
+	unsigned char* MapName;
+	unsigned char* Dedicated;
+	unsigned char* GameMode;
+	unsigned char* Game_Classic;
+	unsigned char* NumPlayers;
+	unsigned char* GameType;
+	unsigned char* TeamPlay;
+	unsigned char* GameVariant;
+	unsigned char* FragLimit;
 };
 
 
