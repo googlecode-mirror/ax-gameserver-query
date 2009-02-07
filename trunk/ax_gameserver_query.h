@@ -122,17 +122,28 @@ struct axgsq_serverinfo_halo
 	unsigned char* Hostname;
 	unsigned char* GameVer;
 	unsigned char* HostPort;
-	unsigned char* MaxPlayers;
-	unsigned char* Password;
+	unsigned char MaxPlayers;
+	unsigned char Password;
 	unsigned char* MapName;
-	unsigned char* Dedicated;
+	unsigned char Dedicated;
 	unsigned char* GameMode;
-	unsigned char* Game_Classic;
-	unsigned char* NumPlayers;
+	unsigned char Game_Classic;
+	unsigned char NumPlayers;
 	unsigned char* GameType;
-	unsigned char* TeamPlay;
+	unsigned char TeamPlay;
 	unsigned char* GameVariant;
-	unsigned char* FragLimit;
+	unsigned char FragLimit;
+	unsigned char* Player_Flags;
+	unsigned char* Game_Flags;
+	struct
+	{
+		unsigned char* PlayerName;
+		unsigned char Score;
+		unsigned char* Ping;
+		unsigned char Team;
+	} Players[64];
+	unsigned char TeamRedScore;
+	unsigned char TeamBlueScore;
 };
 
 
