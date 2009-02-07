@@ -98,6 +98,7 @@ PHP_MINIT_FUNCTION(ax_gameserver_query)
 	//REGISTER_LONG_CONSTANT( "AXGSQ_UNKNOWN", AXGSQ_UNKNOWN, CONST_CS|CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT( "AXGSQ_SOURCE", AXGSQ_SOURCE, CONST_CS|CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT( "AXGSQ_THESHIP", AXGSQ_THESHIP, CONST_CS|CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT( "AXGSQ_HALO", AXGSQ_HALO, CONST_CS|CONST_PERSISTENT );
 	return SUCCESS;
 }
 
@@ -156,6 +157,7 @@ PHP_FUNCTION(axgsq_connect)
 	pResource = axgsq_connect( iGameServer, cConnectionString, iPort );
 	if( pResource == NULL )
 	{
+		free( pResource );
 		RETURN_NULL();
 	}
 	else
@@ -197,6 +199,7 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	struct axgsq_serverinfo* pServerInfo = axgsq_get_serverinfo( pResource );
 	if( pServerInfo == NULL )
 	{
+		free( pServerInfo );
 		RETURN_NULL();
 	}
 	else
@@ -241,14 +244,16 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
 				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
+				free( pSIs->Players[x].PlayerName );
 			}
 			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
-
-			//delete [] temp;
-			//free( pSIs );
-			//free( pServerInfo );
+			free( pSIs->ServerName );
+			free( pSIs->Map );
+			free( pSIs->GameDirectory );
+			free( pSIs->GameDescription );
+			free( pSIs->GameVersion );
 		}
 		else if( pServerInfo->GameServer == AXGSQ_THESHIP )
 		{
@@ -293,20 +298,64 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
 				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
+				free( pSIs->Players[x].PlayerName );
 			}
 			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
+			free( pSIs->ServerName );
+			free( pSIs->Map );
+			free( pSIs->GameDirectory );
+			free( pSIs->GameDescription );
+			free( pSIs->GameVersion );
+		}
+		else if( pServerInfo->GameServer == AXGSQ_HALO )
+		{
+			struct axgsq_serverinfo_halo* pSIs = (struct axgsq_serverinfo_halo*) pServerInfo->ServerInfo;
+			zval* zServerInfo;
+			ALLOC_INIT_ZVAL( zServerInfo );
+			array_init( zServerInfo );
+			array_init( return_value );
 
-			//delete [] temp;
-			//free( pSIs );
-			//free( pServerInfo );
+			add_assoc_string( zServerInfo, "Hostname", pSIs->Hostname, 1 );
+			add_assoc_string( zServerInfo, "GameVer", pSIs->GameVer, 1 );
+			add_assoc_string( zServerInfo, "HostPort", pSIs->HostPort, 1 );
+			add_assoc_string( zServerInfo, "MaxPlayers", pSIs->MaxPlayers, 1 );
+			add_assoc_string( zServerInfo, "Password", pSIs->Password, 1 );
+			add_assoc_string( zServerInfo, "MapName", pSIs->MapName, 1 );
+			add_assoc_string( zServerInfo, "Dedicated", pSIs->Dedicated, 1 );
+			add_assoc_string( zServerInfo, "GameMode", pSIs->GameMode, 1 );
+			add_assoc_string( zServerInfo, "Game_Classic", pSIs->Game_Classic, 1 );
+			add_assoc_string( zServerInfo, "NumPlayers", pSIs->NumPlayers, 1 );
+			add_assoc_string( zServerInfo, "GameType", pSIs->GameType, 1 );
+			add_assoc_string( zServerInfo, "TeamPlay", pSIs->TeamPlay, 1 );
+			add_assoc_string( zServerInfo, "GameVariant", pSIs->GameVariant, 1 );
+			add_assoc_string( zServerInfo, "FragLimit", pSIs->FragLimit, 1 );
+
+			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
+			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
+			free( pSIs->Hostname );
+			free( pSIs->GameVer );
+			free( pSIs->HostPort );
+			free( pSIs->MaxPlayers );
+			free( pSIs->Password );
+			free( pSIs->MapName );
+			free( pSIs->Dedicated );
+			free( pSIs->GameMode );
+			free( pSIs->Game_Classic );
+			free( pSIs->NumPlayers );
+			free( pSIs->GameType );
+			free( pSIs->TeamPlay );
+			free( pSIs->GameVariant );
+			free( pSIs->FragLimit );
 		}
 		else
 		{
-			//error
+			free( pServerInfo->ServerInfo );
 			free( pServerInfo );
 			RETURN_FALSE;
 		}
 	}
+	free( pServerInfo->ServerInfo );
+	free( pServerInfo );
 }
