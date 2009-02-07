@@ -1,7 +1,7 @@
-#summary Dev help page.
+#summary Source Engine Protocol Documentation.
 #labels Phase-Implementation
 
-==Source & The Ship==
+==Source==
 
 ----
 *A2S_INFO*
@@ -30,13 +30,6 @@ Server Sends:
 || OS || byte || Host operating system. 'l' for Linux, 'w' for Windows. ||
 || Password || byte || If set to 0x01, a password is required to join this server. ||
 || Secure || byte || If set to 0x01, this server is VAC secured. ||
-
-Start of The Ship data.
-|| Game Mode || byte || 0x00 for Hunt, 0x01 for Elimination, 0x02 for Duel, 0x03 for Deathmatch, 0x04 for Team VIP, 0x05 for Team Elimination ||
-|| Witness Count || byte || The minimum number of witnesses for a player to be arrested. ||
-|| Witness Time || byte || Time in seconds before player is arrested while being witnessed. ||
-
-End of The Ship data.  Continuing standard Source protocol.
 || Game Version || string || The version of the game. ||
 
 ----
