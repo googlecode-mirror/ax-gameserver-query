@@ -199,7 +199,7 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	struct axgsq_serverinfo* pServerInfo = axgsq_get_serverinfo( pResource );
 	if( pServerInfo == NULL )
 	{
-		free( pServerInfo );
+		axgsq_dealloc( pServerInfo );
 		RETURN_NULL();
 	}
 	else
@@ -244,16 +244,11 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
 				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
-				free( pSIs->Players[x].PlayerName );
 			}
 			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
-			free( pSIs->ServerName );
-			free( pSIs->Map );
-			free( pSIs->GameDirectory );
-			free( pSIs->GameDescription );
-			free( pSIs->GameVersion );
+			axgsq_dealloc( pServerInfo );
 		}
 		else if( pServerInfo->GameServer == AXGSQ_THESHIP )
 		{
@@ -298,16 +293,11 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
 				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
-				free( pSIs->Players[x].PlayerName );
 			}
 			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
-			free( pSIs->ServerName );
-			free( pSIs->Map );
-			free( pSIs->GameDirectory );
-			free( pSIs->GameDescription );
-			free( pSIs->GameVersion );
+			axgsq_dealloc( pServerInfo );
 		}
 		else if( pServerInfo->GameServer == AXGSQ_HALO )
 		{
@@ -316,7 +306,6 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			ALLOC_INIT_ZVAL( zServerInfo );
 			array_init( zServerInfo );
 			array_init( return_value );
-
 			add_assoc_string( zServerInfo, "Hostname", pSIs->Hostname, 1 );
 			add_assoc_string( zServerInfo, "GameVer", pSIs->GameVer, 1 );
 			add_assoc_string( zServerInfo, "HostPort", pSIs->HostPort, 1 );
@@ -345,31 +334,18 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 				add_assoc_string( zTempPArray, "Ping", pSIs->Players[x].Ping, 1 );
 				add_assoc_long( zTempPArray, "Team", pSIs->Players[x].Team );
 				add_next_index_zval( zPlayerArray, zTempPArray );
-				free( pSIs->Players[x].PlayerName );
-				free( pSIs->Players[x].Ping );
 			}
 			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
 			add_assoc_long( zServerInfo, "TeamRedScore", pSIs->TeamRedScore );
 			add_assoc_long( zServerInfo, "TeamBlueScore", pSIs->TeamBlueScore );
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
-			free( pSIs->Hostname );
-			free( pSIs->GameVer );
-			free( pSIs->HostPort );
-			free( pSIs->MapName );
-			free( pSIs->GameMode );
-			free( pSIs->GameType );
-			free( pSIs->GameVariant );
-			free( pSIs->Player_Flags );
-			free( pSIs->Game_Flags );
+			axgsq_dealloc( pServerInfo );
 		}
 		else
 		{
-			free( pServerInfo->ServerInfo );
-			free( pServerInfo );
+			axgsq_dealloc( pServerInfo );
 			RETURN_FALSE;
 		}
 	}
-	free( pServerInfo->ServerInfo );
-	free( pServerInfo );
 }

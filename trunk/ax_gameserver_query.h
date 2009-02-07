@@ -151,5 +151,6 @@ void axgsq_debug( int iDebug );
 struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString, int iPort );
 int axgsq_disconnect( struct axgsq_res* pResource );
 struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource );
+void axgsq_dealloc( struct axgsq_serverinfo* pSI );
 
 #endif /* _AX_GAMESERVER_QUERY_H */

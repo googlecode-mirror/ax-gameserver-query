@@ -603,6 +603,54 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 	}
 }
 
+void axgsq_dealloc( struct axgsq_serverinfo* pSI )
+{
+	int x;
+	void* pSIs = pSI->ServerInfo;
+	switch( pSI->GameServer )
+	{
+	case AXGSQ_SOURCE:
+		free( ((struct axgsq_serverinfo_source*)pSIs)->ServerName );
+		free( ((struct axgsq_serverinfo_source*)pSIs)->Map );
+		free( ((struct axgsq_serverinfo_source*)pSIs)->GameDirectory );
+		free( ((struct axgsq_serverinfo_source*)pSIs)->GameDescription );
+		free( ((struct axgsq_serverinfo_source*)pSIs)->GameVersion );
+		for( x = 0; x < ((struct axgsq_serverinfo_source*)pSIs)->NumPlayers; x++ )
+			free( ((struct axgsq_serverinfo_source*)pSIs)->Players[x].PlayerName );
+		free( pSI->ServerInfo );
+		free( pSI );
+		break;
+	case AXGSQ_THESHIP:
+		free( ((struct axgsq_serverinfo_theship*)pSIs)->ServerName );
+		free( ((struct axgsq_serverinfo_theship*)pSIs)->Map );
+		free( ((struct axgsq_serverinfo_theship*)pSIs)->GameDirectory );
+		free( ((struct axgsq_serverinfo_theship*)pSIs)->GameDescription );
+		free( ((struct axgsq_serverinfo_theship*)pSIs)->GameVersion );
+		for( x = 0; x < ((struct axgsq_serverinfo_theship*)pSIs)->NumPlayers; x++ )
+			free( ((struct axgsq_serverinfo_theship*)pSIs)->Players[x].PlayerName );
+		free( pSI->ServerInfo );
+		free( pSI );
+		break;
+	case AXGSQ_HALO:
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->Hostname );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->GameVer );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->HostPort );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->MapName );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->GameMode );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->GameType );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->GameVariant );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->Player_Flags );
+		free( ((struct axgsq_serverinfo_halo*)pSIs)->Game_Flags );
+		for( x = 0; x < ((struct axgsq_serverinfo_halo*)pSIs)->NumPlayers; x++ )
+		{
+			free( ((struct axgsq_serverinfo_halo*)pSIs)->Players[x].PlayerName );
+			free( ((struct axgsq_serverinfo_halo*)pSIs)->Players[x].Ping );
+		}
+		free( pSI->ServerInfo );
+		free( pSI );
+		break;
+	}
+}
 
 
 /*
