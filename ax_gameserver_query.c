@@ -71,9 +71,12 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	pResource->iGameServer = iGameServer;
 	switch( iGameServer )
 	{
+	//case AXGSQ_ASE:
+	//case AXGSQ_GAMESPY:
+	case AXGSQ_GAMESPY2:
+	//case AXGSQ_GAMESPY3:
 	case AXGSQ_SOURCE:
 	case AXGSQ_THESHIP:
-	case AXGSQ_HALO:
 		iSocketType = SOCK_DGRAM;
 		iSocketProtocol = IPPROTO_UDP;
 		break;
@@ -188,7 +191,110 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 		unsigned char* cInput = NULL;
 		int iPos = 0;
 		// Creating a switch() using if/else if/else syntax due to incompatibility with Dev-C++ (gcc)
-		if( pResource->iGameServer == AXGSQ_SOURCE )
+		if( pResource->iGameServer == AXGSQ_ASE )
+		{
+		}
+		else if( pResource->iGameServer == AXGSQ_GAMESPY )
+		{
+		}
+		else if( pResource->iGameServer == AXGSQ_GAMESPY2 )
+		{
+			pServerInfo->GameServer = pResource->iGameServer;
+			struct axgsq_serverinfo_gamespy* pSI = (struct axgsq_serverinfo_gamespy*) malloc( sizeof( struct axgsq_serverinfo_gamespy ) );
+			if( pSI == NULL )
+			{
+				free( pServerInfo );
+				free( cInput );
+				free( pSI );
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			memset( pSI, 0, sizeof( pSI ) );
+			if( axgsq_send( pResource->pSocket, (const unsigned char *)"\xFE\xFD\x00\x50\x69\x4E\x47\xFF\xFF\xFF", 10, 0 ) == -1 )
+			{
+				free( pServerInfo );
+				free( cInput );
+				free( pSI );
+				axgsq_error( "Socket send error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			cInput = (unsigned char*) malloc( 2049 );
+			if( cInput == NULL )
+			{
+				free( pServerInfo );
+				free( cInput );
+				free( pSI );
+				axgsq_error( "Memory allocation error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+			memset( cInput, 0, 2049 );
+			if( axgsq_recv( pResource->pSocket, (unsigned char *)cInput, 2048, 0 ) < 1 )
+			{
+				free( pServerInfo );
+				free( cInput );
+				free( pSI );
+				axgsq_error( "Socket recv error in axgsq_get_serverinfo()\n" );
+				return NULL;
+			}
+
+			iPos = 5;
+			int x = 0;
+			int iLocation = axgsq_istrstr( 0, cInput, 2048-iPos, "\x00\x00\x00", 3 );
+			pSI->NumInfo = 0;
+			pSI->Info = (struct axgsq_serverinfo_keyval*) malloc( sizeof(struct axgsq_serverinfo_keyval) );
+			while( iPos < iLocation-1 )
+			{
+				pSI->NumInfo++;
+				pSI->Info = (struct axgsq_serverinfo_keyval*) realloc( pSI->Info, sizeof(struct axgsq_serverinfo_keyval) * (x+1) );
+				pSI->Info[x].Key = axgsq_get_string( cInput, &iPos );
+				pSI->Info[x].Value = axgsq_get_string( cInput, &iPos );
+				x++;
+			}
+
+			iPos += 2;
+			int iNumPlayers = axgsq_get_byte( cInput, &iPos );
+			x = 0;
+			iLocation = axgsq_istrstr( iPos, cInput, 2048-iPos, "\x00\x00", 2 );
+			char** cPlayerHeaders = malloc( sizeof(char*) );
+			while( iPos < iLocation-1 )
+			{
+				cPlayerHeaders = (char**) realloc( cPlayerHeaders, sizeof(char*) * (x+1) );
+				cPlayerHeaders[x] = axgsq_get_string( cInput, &iPos );
+				x++;
+			}
+			int iPlayerHeadersLen = x;
+			iPos += 1;
+
+			x = 0;
+			int y, z = 0, iLen;
+			char* cTemp = (char*) malloc( sizeof(char) * 21 );
+			memset( cTemp, 0, 21 );
+			pSI->NumPlayer = 0;
+			pSI->Player = (struct axgsq_serverinfo_keyval*) malloc( sizeof(struct axgsq_serverinfo_keyval) );
+			while( x < iNumPlayers )
+			{
+				for( y = 0; y < iPlayerHeadersLen; y++ )
+				{
+					pSI->NumPlayer++;
+					pSI->Player = (struct axgsq_serverinfo_keyval*) realloc( pSI->Player, sizeof(struct axgsq_serverinfo_keyval) * (z+1) );
+					memset( cTemp, 0, 21 );
+					iLen = sprintf( cTemp, "%s%d", cPlayerHeaders[y], x+1 );
+					pSI->Player[z].Key = (char*) malloc( iLen );
+					strcpy( pSI->Player[z].Key, cTemp );
+					pSI->Player[z].Value = axgsq_get_string( cInput, &iPos );
+					z++;
+				}
+				x++;
+			}
+			while( iPos < 2048 )
+				printf( "%c", axgsq_get_byte( cInput, &iPos ) );
+			
+			pServerInfo->ServerInfo = pSI;
+		}
+		else if( pResource->iGameServer == AXGSQ_GAMESPY3 )
+		{
+		}
+		else if( pResource->iGameServer == AXGSQ_SOURCE )
 		{
 			pServerInfo->GameServer = pResource->iGameServer;
 			struct axgsq_serverinfo_source* pSI = (struct axgsq_serverinfo_source*) malloc( sizeof(struct axgsq_serverinfo_source) );
@@ -467,7 +573,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			free( cInput );
 			pServerInfo->ServerInfo = pSI;
 		}
-		else if( pResource->iGameServer == AXGSQ_HALO )
+		/*else if( pResource->iGameServer == AXGSQ_HALO )
 		{
 			pServerInfo->GameServer = pResource->iGameServer;
 			struct axgsq_serverinfo_halo* pSI = (struct axgsq_serverinfo_halo*) malloc( sizeof(struct axgsq_serverinfo_halo) );
@@ -586,7 +692,7 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 			free( cTemp );
 			free( cInput );
 			pServerInfo->ServerInfo = pSI;
-		}
+		}*/
 		else
 		{
 			free( pServerInfo );
@@ -631,7 +737,7 @@ void axgsq_dealloc( struct axgsq_serverinfo* pSI )
 		free( pSI->ServerInfo );
 		free( pSI );
 		break;
-	case AXGSQ_HALO:
+	/*case AXGSQ_HALO:
 		free( ((struct axgsq_serverinfo_halo*)pSIs)->Hostname );
 		free( ((struct axgsq_serverinfo_halo*)pSIs)->GameVer );
 		free( ((struct axgsq_serverinfo_halo*)pSIs)->HostPort );
@@ -648,7 +754,7 @@ void axgsq_dealloc( struct axgsq_serverinfo* pSI )
 		}
 		free( pSI->ServerInfo );
 		free( pSI );
-		break;
+		break;*/
 	}
 }
 
@@ -673,6 +779,21 @@ int axgsq_isIpAddress( const char* cConnectionString )
 		return 1;
 	}
 	return 0;
+}
+
+int axgsq_istrstr( int _StartPos, const unsigned char* _Str, int _StrLen, const unsigned char* _SubStr, int _SubStrLen )
+{
+	int x, Match = 0;
+	for( x = _StartPos; x < _StrLen; x++ )
+	{
+		if( _Str[x] == _SubStr[Match] )
+			Match++;
+		else
+			Match = 0;
+		if( Match == _SubStrLen )
+			return x;
+	}
+	return -1;
 }
 
 #ifdef _WIN32

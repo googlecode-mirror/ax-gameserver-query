@@ -96,9 +96,13 @@ PHP_MINIT_FUNCTION(ax_gameserver_query)
 	*/
 	ax_gameserver_query_resource = zend_register_list_destructors_ex( ax_gameserver_query_resource_dtor, NULL, "ax_gameserver_query resource", module_number );
 	//REGISTER_LONG_CONSTANT( "AXGSQ_UNKNOWN", AXGSQ_UNKNOWN, CONST_CS|CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT( "AXGSQ_ASE", AXGSQ_ASE, CONST_CS|CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT( "AXGSQ_GAMESPY", AXGSQ_GAMESPY, CONST_CS|CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT( "AXGSQ_GAMESPY2", AXGSQ_GAMESPY2, CONST_CS|CONST_PERSISTENT );
+	REGISTER_LONG_CONSTANT( "AXGSQ_GAMESPY3", AXGSQ_GAMESPY3, CONST_CS|CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT( "AXGSQ_SOURCE", AXGSQ_SOURCE, CONST_CS|CONST_PERSISTENT );
 	REGISTER_LONG_CONSTANT( "AXGSQ_THESHIP", AXGSQ_THESHIP, CONST_CS|CONST_PERSISTENT );
-	REGISTER_LONG_CONSTANT( "AXGSQ_HALO", AXGSQ_HALO, CONST_CS|CONST_PERSISTENT );
+	//REGISTER_LONG_CONSTANT( "AXGSQ_HALO", AXGSQ_HALO, CONST_CS|CONST_PERSISTENT );
 	return SUCCESS;
 }
 
@@ -204,7 +208,43 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	}
 	else
 	{
-		if( pServerInfo->GameServer == AXGSQ_SOURCE )
+		if( pServerInfo->GameServer == AXGSQ_GAMESPY2 )
+		{
+			struct axgsq_serverinfo_gamespy* pSIs = (struct axgsq_serverinfo_gamespy*) pServerInfo->ServerInfo;
+			zval* zServerInfo;
+			ALLOC_INIT_ZVAL( zServerInfo );
+			array_init( zServerInfo );
+			array_init( return_value );
+
+			zval* zInfoArray;
+			ALLOC_INIT_ZVAL( zInfoArray );
+			array_init( zInfoArray );
+			int x;
+			for( x = 0; x < pSIs->NumInfo; x++ )
+			{
+				add_assoc_string( zInfoArray, pSIs->Info[x].Key, pSIs->Info[x].Value, 1 );
+			}
+			add_assoc_long( zServerInfo, "NumInfo", pSIs->NumInfo );
+			add_assoc_zval( zServerInfo, "Info", zInfoArray );
+
+			
+			zval* zPlayerArray;
+			ALLOC_INIT_ZVAL( zPlayerArray );
+			array_init( zPlayerArray );
+			x = 0;
+			for( x = 0; x < pSIs->NumPlayer; x++ )
+			{
+				add_assoc_string( zPlayerArray, pSIs->Player[x].Key, pSIs->Player[x].Value, 1 );
+			}
+			add_assoc_long( zServerInfo, "NumPlayer", pSIs->NumPlayer );
+			add_assoc_zval( zServerInfo, "Player", zPlayerArray );
+			
+
+			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
+			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
+			//axgsq_dealloc( pServerInfo );
+		}
+		else if( pServerInfo->GameServer == AXGSQ_SOURCE )
 		{
 			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->ServerInfo;
 			char temp[2];
@@ -299,7 +339,7 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
 			axgsq_dealloc( pServerInfo );
 		}
-		else if( pServerInfo->GameServer == AXGSQ_HALO )
+/*		else if( pServerInfo->GameServer == AXGSQ_HALO )
 		{
 			struct axgsq_serverinfo_halo* pSIs = (struct axgsq_serverinfo_halo*) pServerInfo->ServerInfo;
 			zval* zServerInfo;
@@ -341,7 +381,7 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
 			axgsq_dealloc( pServerInfo );
-		}
+		}*/
 		else
 		{
 			axgsq_dealloc( pServerInfo );
