@@ -203,7 +203,7 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	struct axgsq_serverinfo* pServerInfo = axgsq_get_serverinfo( pResource );
 	if( pServerInfo == NULL )
 	{
-		axgsq_dealloc( pServerInfo );
+		//axgsq_dealloc( pServerInfo );
 		RETURN_NULL();
 	}
 	else
@@ -227,7 +227,6 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			add_assoc_long( zServerInfo, "NumInfo", pSIs->NumInfo );
 			add_assoc_zval( zServerInfo, "Info", zInfoArray );
 
-			
 			zval* zPlayerArray;
 			ALLOC_INIT_ZVAL( zPlayerArray );
 			array_init( zPlayerArray );
@@ -238,7 +237,17 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 			}
 			add_assoc_long( zServerInfo, "NumPlayer", pSIs->NumPlayer );
 			add_assoc_zval( zServerInfo, "Player", zPlayerArray );
-			
+
+			zval* zTeamArray;
+			ALLOC_INIT_ZVAL( zTeamArray );
+			array_init( zTeamArray );
+			x = 0;
+			for( x = 0; x < pSIs->NumTeam; x++ )
+			{
+				add_assoc_string( zTeamArray, pSIs->Team[x].Key, pSIs->Team[x].Value, 1 );
+			}
+			add_assoc_long( zServerInfo, "NumTeam", pSIs->NumTeam );
+			add_assoc_zval( zServerInfo, "Team", zTeamArray );
 
 			add_assoc_long( return_value, "GameServer", pServerInfo->GameServer );
 			add_assoc_zval( return_value, "ServerInfo", zServerInfo );
