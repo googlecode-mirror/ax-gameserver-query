@@ -133,12 +133,10 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 		if( ( pHost = gethostbyname( cConnectionString ) ) == NULL )
 		{
 			free( pResource );
-			free( pHost );
 			axgsq_error( "Hostname resolution failed in axgsq_connect();\n" );
 			return NULL;
 		}
 		pResource->pSockAddr.sin_addr.s_addr = *((unsigned long*)pHost->h_addr_list[0]);
-		free( pHost );
 	}
 	pResource->pSockAddr.sin_port = htons( (u_short)iPort );
 #ifdef _WIN32
