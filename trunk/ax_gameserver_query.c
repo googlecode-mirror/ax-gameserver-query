@@ -31,6 +31,7 @@
 int iIsDebug = 0;
 
 int axgsq_isIpAddress( const char* cConnectionString );
+int axgsq_istrstr( int _StartPos, const unsigned char* _Str, int _StrLen, const unsigned char* _SubStr, int _SubStrLen );
 #ifdef _WIN32
 int axgsq_send( SOCKET s, const unsigned char *buf, int len, int flags );
 int axgsq_recv( SOCKET s, unsigned char *buf, int len, int flags );
