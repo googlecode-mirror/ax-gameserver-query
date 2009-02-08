@@ -263,8 +263,8 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				x++;
 			}
 			int iPlayerHeadersLen = x;
-			iPos += 1;
 
+			iPos += 1;
 			x = 0;
 			int y, z = 0, iLen;
 			char* cTemp = (char*) malloc( sizeof(char) * 21 );
@@ -286,8 +286,44 @@ struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource )
 				}
 				x++;
 			}
-			while( iPos < 2048 )
-				printf( "%c", axgsq_get_byte( cInput, &iPos ) );
+
+			iPos += 1;
+			int iNumTeams = axgsq_get_byte( cInput, &iPos );
+			x = 0;
+			iLocation = axgsq_istrstr( iPos, cInput, 2048-iPos, "\x00\x00", 2 );
+			char** cTeamHeaders = (char**) malloc( sizeof(char*) );
+			while( iPos < iLocation-1 )
+			{
+				cTeamHeaders = (char**) realloc( cTeamHeaders, sizeof(char*) * (x+1) );
+				cTeamHeaders[x] = axgsq_get_string( cInput, &iPos );
+				x++;
+			}
+			int iTeamHeadersLen = x;
+
+			iPos += 1;
+			x = 0;
+			z = 0;
+			pSI->NumTeam = 0;
+			pSI->Team = (struct axgsq_serverinfo_keyval*) malloc( sizeof(struct axgsq_serverinfo_keyval) );
+			while( x < iNumTeams )
+			{
+				for( y = 0; y < iTeamHeadersLen; y++ )
+				{
+					pSI->NumTeam++;
+					pSI->Team = (struct axgsq_serverinfo_keyval*) realloc( pSI->Team, sizeof(struct axgsq_serverinfo_keyval) * (z+1) );
+					memset( cTemp, 0, 21 );
+					iLen = sprintf( cTemp, "%s%d", cTeamHeaders[y], x+1 );
+					pSI->Team[z].Key = (char*) malloc( iLen );
+					strcpy( pSI->Team[z].Key, cTemp );
+					pSI->Team[z].Value = axgsq_get_string( cInput, &iPos );
+					z++;
+				}
+				x++;
+			}
+
+
+			//while( iPos < 2048 )
+			//	printf( "%c", axgsq_get_byte( cInput, &iPos ) );
 			
 			pServerInfo->ServerInfo = pSI;
 		}
@@ -715,6 +751,28 @@ void axgsq_dealloc( struct axgsq_serverinfo* pSI )
 	void* pSIs = pSI->ServerInfo;
 	switch( pSI->GameServer )
 	{
+	case AXGSQ_GAMESPY2:
+		for( x = 0; x <((struct axgsq_serverinfo_gamespy*)pSIs)->NumInfo; x++ )
+		{
+			free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Info[x].Key );
+			free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Info[x].Value );
+		}
+		for( x = 0; x <((struct axgsq_serverinfo_gamespy*)pSIs)->NumPlayer; x++ )
+		{
+			free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Player[x].Key );
+			free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Player[x].Value );
+		}
+		for( x = 0; x <((struct axgsq_serverinfo_gamespy*)pSIs)->NumTeam; x++ )
+		{
+			free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Team[x].Key );
+			free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Team[x].Value );
+		}
+		free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Info );
+		free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Player );
+		free( ((struct axgsq_serverinfo_gamespy*)pSIs)->Team );
+		free( pSI->ServerInfo );
+		free( pSI );
+		break;
 	case AXGSQ_SOURCE:
 		free( ((struct axgsq_serverinfo_source*)pSIs)->ServerName );
 		free( ((struct axgsq_serverinfo_source*)pSIs)->Map );
