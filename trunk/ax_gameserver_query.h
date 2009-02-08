@@ -51,15 +51,35 @@ struct axgsq_res
 
 enum
 {
+	AXGSQ_ASE,
+	AXGSQ_GAMESPY,
+	AXGSQ_GAMESPY2,
+	AXGSQ_GAMESPY3,
 	AXGSQ_SOURCE,
-	AXGSQ_THESHIP,
-	AXGSQ_HALO
+	AXGSQ_THESHIP
+	/*AXGSQ_HALO*/
 };
 
 struct axgsq_serverinfo
 {
 	int GameServer;
 	void* ServerInfo;
+};
+
+struct axgsq_serverinfo_keyval
+{
+	unsigned char* Key;
+	unsigned char* Value;
+};
+
+struct axgsq_serverinfo_gamespy
+{
+	unsigned char NumInfo;
+	struct axgsq_serverinfo_keyval* Info;
+	unsigned char NumPlayer;
+	struct axgsq_serverinfo_keyval* Player;
+	unsigned char NumTeam;
+	struct axgsq_serverinfo_keyval* Team;
 };
 
 struct axgsq_serverinfo_source
@@ -117,6 +137,7 @@ struct axgsq_serverinfo_theship
 	} Players[64];
 };
 
+/*
 struct axgsq_serverinfo_halo
 {
 	unsigned char* Hostname;
@@ -145,6 +166,7 @@ struct axgsq_serverinfo_halo
 	unsigned char TeamRedScore;
 	unsigned char TeamBlueScore;
 };
+*/
 
 
 void axgsq_debug( int iDebug );
