@@ -44,20 +44,10 @@ PHP_RINIT_FUNCTION(ax_gameserver_query);
 PHP_RSHUTDOWN_FUNCTION(ax_gameserver_query);
 PHP_MINFO_FUNCTION(ax_gameserver_query);
 
-PHP_FUNCTION(axgsq_debug);
+PHP_FUNCTION(axgsq_version);
 PHP_FUNCTION(axgsq_connect);
 PHP_FUNCTION(axgsq_disconnect);
 PHP_FUNCTION(axgsq_get_serverinfo);
-
-/* 
-  	Declare any global variables you may need between the BEGIN
-	and END macros here:     
-
-ZEND_BEGIN_MODULE_GLOBALS(ax_gameserver_query)
-	long  global_value;
-	char *global_string;
-ZEND_END_MODULE_GLOBALS(ax_gameserver_query)
-*/
 
 #ifdef ZTS
 #define AX_GAMESERVER_QUERY_G(v) TSRMG(ax_gameserver_query_globals_id, zend_ax_gameserver_query_globals *, v)

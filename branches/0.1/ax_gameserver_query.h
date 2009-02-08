@@ -51,35 +51,14 @@ struct axgsq_res
 
 enum
 {
-	AXGSQ_ASE,
-	AXGSQ_GAMESPY,
-	AXGSQ_GAMESPY2,
-	AXGSQ_GAMESPY3,
 	AXGSQ_SOURCE,
 	AXGSQ_THESHIP
-	/*AXGSQ_HALO*/
 };
 
 struct axgsq_serverinfo
 {
 	int GameServer;
 	void* ServerInfo;
-};
-
-struct axgsq_serverinfo_keyval
-{
-	unsigned char* Key;
-	unsigned char* Value;
-};
-
-struct axgsq_serverinfo_gamespy
-{
-	unsigned char NumInfo;
-	struct axgsq_serverinfo_keyval* Info;
-	unsigned char NumPlayer;
-	struct axgsq_serverinfo_keyval* Player;
-	unsigned char NumTeam;
-	struct axgsq_serverinfo_keyval* Team;
 };
 
 struct axgsq_serverinfo_source
@@ -137,39 +116,7 @@ struct axgsq_serverinfo_theship
 	} Players[64];
 };
 
-/*
-struct axgsq_serverinfo_halo
-{
-	unsigned char* Hostname;
-	unsigned char* GameVer;
-	unsigned char* HostPort;
-	unsigned char MaxPlayers;
-	unsigned char Password;
-	unsigned char* MapName;
-	unsigned char Dedicated;
-	unsigned char* GameMode;
-	unsigned char Game_Classic;
-	unsigned char NumPlayers;
-	unsigned char* GameType;
-	unsigned char TeamPlay;
-	unsigned char* GameVariant;
-	unsigned char FragLimit;
-	unsigned char* Player_Flags;
-	unsigned char* Game_Flags;
-	struct
-	{
-		unsigned char* PlayerName;
-		unsigned char Score;
-		unsigned char* Ping;
-		unsigned char Team;
-	} Players[64];
-	unsigned char TeamRedScore;
-	unsigned char TeamBlueScore;
-};
-*/
-
-
-void axgsq_debug( int iDebug );
+char* axgsq_version( void );
 struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString, int iPort );
 int axgsq_disconnect( struct axgsq_res* pResource );
 struct axgsq_serverinfo* axgsq_get_serverinfo( struct axgsq_res* pResource );
