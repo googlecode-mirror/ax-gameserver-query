@@ -91,14 +91,14 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 
 
 #ifdef _WIN32
-	WSADATA* pWSAData = malloc( sizeof( WSADATA ) );
+	WSADATA* pWSAData = (WSADATA*) malloc( sizeof( WSADATA ) );
 	if( pWSAData == NULL )
 	{
 		free( pResource );
 		free( pWSAData );
 	}
 	memset( pWSAData, 0, sizeof( WSADATA ) );
-	if( WSAStartup( MAKEWORD( 2, 0 ), &pWSAData ) != 0 )
+	if( WSAStartup( MAKEWORD( 2, 0 ), pWSAData ) != 0 )
 	{
 		// Winsock startup error
 		free( pResource );
