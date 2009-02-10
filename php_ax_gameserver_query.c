@@ -58,7 +58,7 @@ zend_module_entry ax_gameserver_query_module_entry = {
 	NULL,
 	PHP_MINFO(ax_gameserver_query),
 #if ZEND_MODULE_API_NO >= 20010901
-	"0.1.34",
+	"0.1.40",
 #endif
 	STANDARD_MODULE_PROPERTIES
 };

@@ -44,7 +44,7 @@ unsigned char* axgsq_get_string( unsigned char* cInput, int* iPos );
 
 char* axgsq_version( void )
 {
-	return (char*)"v0.1.34";
+	return (char*)"v0.1.40";
 }
 
 struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString, int iPort )
