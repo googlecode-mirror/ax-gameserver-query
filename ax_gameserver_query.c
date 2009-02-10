@@ -72,14 +72,14 @@ struct axgsq_res* axgsq_connect( int iGameServer, const char* cConnectionString,
 	pResource->iSocketType = iSocketType;
 	pResource->iSocketProtocol = iSocketProtocol;
 #ifdef _WIN32
-	WSADATA* pWSAData = malloc( sizeof( WSADATA ) );
+	WSADATA* pWSAData = (WSADATA*) malloc( sizeof( WSADATA ) );
 	if( pWSAData == NULL )
 	{
 		free( pResource );
 		free( pWSAData );
 	}
 	memset( pWSAData, 0, sizeof( WSADATA ) );
-	if( WSAStartup( MAKEWORD( 2, 0 ), &pWSAData ) != 0 )
+	if( WSAStartup( MAKEWORD( 2, 0 ), pWSAData ) != 0 )
 	{
 		free( pResource );
 		free( pWSAData );
