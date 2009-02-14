@@ -94,12 +94,12 @@ PHP_FUNCTION(axgsq_version)
 PHP_FUNCTION(axgsq_connect)
 {
 	int iGameServer, iPort, iConnectionString_len;
-	char* cConnectionString;
+	char *cConnectionString;
+	struct axgsq_res *pResource;
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "lsl", &iGameServer, &cConnectionString, &iConnectionString_len, &iPort ) == FAILURE )
 	{
 		RETURN_NULL();
 	}
-	struct axgsq_res* pResource;
 	pResource = axgsq_connect( iGameServer, cConnectionString, iPort );
 	if( pResource == NULL )
 	{
@@ -133,14 +133,22 @@ PHP_FUNCTION(axgsq_disconnect)
 
 PHP_FUNCTION(axgsq_get_serverinfo)
 {
-	zval* zResource;
-	struct axgsq_res* pResource;
+	zval *zResource;
+	struct axgsq_res *pResource;
+	struct axgsq_serverinfo *pServerInfo;
+	void *pSIs;
+	char temp[2];
+	zval* zServerInfo;
+	zval* zPlayerArray;
+	zval* zTempPArray;
+	int x;
+	
 	if( zend_parse_parameters( ZEND_NUM_ARGS() TSRMLS_CC, "r", &zResource ) == FAILURE )
 	{
 		RETURN_NULL();
 	}
 	ZEND_FETCH_RESOURCE( pResource, struct axgsq_res*, &zResource, -1, "ax_gameserver_query_resource", ax_gameserver_query_resource );
-	struct axgsq_serverinfo* pServerInfo = axgsq_get_serverinfo( pResource );
+	pServerInfo = axgsq_get_serverinfo( pResource );
 	if( pServerInfo == NULL )
 	{
 		RETURN_NULL();
@@ -149,43 +157,38 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 	{
 		if( pServerInfo->GameServer == AXGSQ_SOURCE )
 		{
-			struct axgsq_serverinfo_source* pSIs = (struct axgsq_serverinfo_source*) pServerInfo->ServerInfo;
-			char temp[2];
+			pSIs = (struct axgsq_serverinfo_source*) pServerInfo->ServerInfo;
 			temp[1] = 0;
-			zval* zServerInfo;
 			ALLOC_INIT_ZVAL( zServerInfo );
 			array_init( zServerInfo );
 			array_init( return_value );
-			add_assoc_long( zServerInfo, "Version", pSIs->Version );
-			add_assoc_string( zServerInfo, "ServerName", pSIs->ServerName, 1 );
-			add_assoc_string( zServerInfo, "Map", pSIs->Map, 1 );
-			add_assoc_string( zServerInfo, "GameDirectory", pSIs->GameDirectory, 1 );
-			add_assoc_string( zServerInfo, "GameDescription", pSIs->GameDescription, 1 );
-			add_assoc_long( zServerInfo, "AppID", pSIs->AppID );
-			add_assoc_long( zServerInfo, "NumberOfPlayers", pSIs->NumberOfPlayers );
-			add_assoc_long( zServerInfo, "MaximumPlayers", pSIs->MaximumPlayers );
-			add_assoc_long( zServerInfo, "NumberOfBots", pSIs->NumberOfBots );
-			temp[0] = pSIs->Dedicated;
+			add_assoc_long( zServerInfo, "Version", ((struct axgsq_serverinfo_source *)pSIs)->Version );
+			add_assoc_string( zServerInfo, "ServerName", ((struct axgsq_serverinfo_source *)pSIs)->ServerName, 1 );
+			add_assoc_string( zServerInfo, "Map", ((struct axgsq_serverinfo_source *)pSIs)->Map, 1 );
+			add_assoc_string( zServerInfo, "GameDirectory", ((struct axgsq_serverinfo_source *)pSIs)->GameDirectory, 1 );
+			add_assoc_string( zServerInfo, "GameDescription", ((struct axgsq_serverinfo_source *)pSIs)->GameDescription, 1 );
+			add_assoc_long( zServerInfo, "AppID", ((struct axgsq_serverinfo_source *)pSIs)->AppID );
+			add_assoc_long( zServerInfo, "NumberOfPlayers", ((struct axgsq_serverinfo_source *)pSIs)->NumberOfPlayers );
+			add_assoc_long( zServerInfo, "MaximumPlayers", ((struct axgsq_serverinfo_source *)pSIs)->MaximumPlayers );
+			add_assoc_long( zServerInfo, "NumberOfBots", ((struct axgsq_serverinfo_source *)pSIs)->NumberOfBots );
+			temp[0] = ((struct axgsq_serverinfo_source *)pSIs)->Dedicated;
 			add_assoc_stringl( zServerInfo, "Dedicated", temp, 1, 1 );
-			temp[0] = pSIs->OS;
+			temp[0] = ((struct axgsq_serverinfo_source *)pSIs)->OS;
 			add_assoc_stringl( zServerInfo, "OS", temp, 1, 1 );
-			add_assoc_long( zServerInfo, "Password", pSIs->Password );
-			add_assoc_long( zServerInfo, "Secure", pSIs->Secure );
-			add_assoc_string( zServerInfo, "GameVersion", pSIs->GameVersion, 1 );
-			add_assoc_long( zServerInfo, "NumPlayers", pSIs->NumPlayers );
-			zval* zPlayerArray;
-			zval* zTempPArray;
+			add_assoc_long( zServerInfo, "Password", ((struct axgsq_serverinfo_source *)pSIs)->Password );
+			add_assoc_long( zServerInfo, "Secure", ((struct axgsq_serverinfo_source *)pSIs)->Secure );
+			add_assoc_string( zServerInfo, "GameVersion", ((struct axgsq_serverinfo_source *)pSIs)->GameVersion, 1 );
+			add_assoc_long( zServerInfo, "NumPlayers", ((struct axgsq_serverinfo_source *)pSIs)->NumPlayers );
 			ALLOC_INIT_ZVAL( zPlayerArray );
 			array_init( zPlayerArray );
-			int x;
-			for( x = 0; x < pSIs->NumPlayers; x++ )
+			for( x = 0; x < ((struct axgsq_serverinfo_source *)pSIs)->NumPlayers; x++ )
 			{
 				ALLOC_INIT_ZVAL( zTempPArray );
 				array_init( zTempPArray );
-				add_assoc_long( zTempPArray, "Index", pSIs->Players[x].Index );
-				add_assoc_string( zTempPArray, "PlayerName", pSIs->Players[x].PlayerName, 1 );
-				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
-				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
+				add_assoc_long( zTempPArray, "Index", ((struct axgsq_serverinfo_source *)pSIs)->Players[x].Index );
+				add_assoc_string( zTempPArray, "PlayerName", ((struct axgsq_serverinfo_source *)pSIs)->Players[x].PlayerName, 1 );
+				add_assoc_long( zTempPArray, "Kills", ((struct axgsq_serverinfo_source *)pSIs)->Players[x].Kills );
+				add_assoc_double( zTempPArray, "TimeConnected", ((struct axgsq_serverinfo_source *)pSIs)->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
 			}
 			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
@@ -195,46 +198,41 @@ PHP_FUNCTION(axgsq_get_serverinfo)
 		}
 		else if( pServerInfo->GameServer == AXGSQ_THESHIP )
 		{
-			struct axgsq_serverinfo_theship* pSIs = (struct axgsq_serverinfo_theship*) pServerInfo->ServerInfo;
-			char temp[2];
+			pSIs = (struct axgsq_serverinfo_theship*) pServerInfo->ServerInfo;
 			temp[1] = 0;
-			zval* zServerInfo;
 			ALLOC_INIT_ZVAL( zServerInfo );
 			array_init( zServerInfo );
 			array_init( return_value );
-			add_assoc_long( zServerInfo, "Version", pSIs->Version );
-			add_assoc_string( zServerInfo, "ServerName", pSIs->ServerName, 1 );
-			add_assoc_string( zServerInfo, "Map", pSIs->Map, 1 );
-			add_assoc_string( zServerInfo, "GameDirectory", pSIs->GameDirectory, 1 );
-			add_assoc_string( zServerInfo, "GameDescription", pSIs->GameDescription, 1 );
-			add_assoc_long( zServerInfo, "AppID", pSIs->AppID );
-			add_assoc_long( zServerInfo, "NumberOfPlayers", pSIs->NumberOfPlayers );
-			add_assoc_long( zServerInfo, "MaximumPlayers", pSIs->MaximumPlayers );
-			add_assoc_long( zServerInfo, "NumberOfBots", pSIs->NumberOfBots );
-			temp[0] = pSIs->Dedicated;
+			add_assoc_long( zServerInfo, "Version", ((struct axgsq_serverinfo_theship *)pSIs)->Version );
+			add_assoc_string( zServerInfo, "ServerName", ((struct axgsq_serverinfo_theship *)pSIs)->ServerName, 1 );
+			add_assoc_string( zServerInfo, "Map", ((struct axgsq_serverinfo_theship *)pSIs)->Map, 1 );
+			add_assoc_string( zServerInfo, "GameDirectory", ((struct axgsq_serverinfo_theship *)pSIs)->GameDirectory, 1 );
+			add_assoc_string( zServerInfo, "GameDescription", ((struct axgsq_serverinfo_theship *)pSIs)->GameDescription, 1 );
+			add_assoc_long( zServerInfo, "AppID", ((struct axgsq_serverinfo_theship *)pSIs)->AppID );
+			add_assoc_long( zServerInfo, "NumberOfPlayers", ((struct axgsq_serverinfo_theship *)pSIs)->NumberOfPlayers );
+			add_assoc_long( zServerInfo, "MaximumPlayers", ((struct axgsq_serverinfo_theship *)pSIs)->MaximumPlayers );
+			add_assoc_long( zServerInfo, "NumberOfBots", ((struct axgsq_serverinfo_theship *)pSIs)->NumberOfBots );
+			temp[0] = ((struct axgsq_serverinfo_theship *)pSIs)->Dedicated;
 			add_assoc_stringl( zServerInfo, "Dedicated", temp, 1, 1 );
-			temp[0] = pSIs->OS;
+			temp[0] = ((struct axgsq_serverinfo_theship *)pSIs)->OS;
 			add_assoc_stringl( zServerInfo, "OS", temp, 1, 1 );
-			add_assoc_long( zServerInfo, "Password", pSIs->Password );
-			add_assoc_long( zServerInfo, "Secure", pSIs->Secure );
-			add_assoc_long( zServerInfo, "GameMode", pSIs->GameMode );
-			add_assoc_long( zServerInfo, "WitnessCount", pSIs->WitnessCount );
-			add_assoc_long( zServerInfo, "WitnessTime", pSIs->WitnessTime );
-			add_assoc_string( zServerInfo, "GameVersion", pSIs->GameVersion, 1 );
-			add_assoc_long( zServerInfo, "NumPlayers", pSIs->NumPlayers );
-			zval* zPlayerArray;
-			zval* zTempPArray;
+			add_assoc_long( zServerInfo, "Password", ((struct axgsq_serverinfo_theship *)pSIs)->Password );
+			add_assoc_long( zServerInfo, "Secure", ((struct axgsq_serverinfo_theship *)pSIs)->Secure );
+			add_assoc_long( zServerInfo, "GameMode", ((struct axgsq_serverinfo_theship *)pSIs)->GameMode );
+			add_assoc_long( zServerInfo, "WitnessCount", ((struct axgsq_serverinfo_theship *)pSIs)->WitnessCount );
+			add_assoc_long( zServerInfo, "WitnessTime", ((struct axgsq_serverinfo_theship *)pSIs)->WitnessTime );
+			add_assoc_string( zServerInfo, "GameVersion", ((struct axgsq_serverinfo_theship *)pSIs)->GameVersion, 1 );
+			add_assoc_long( zServerInfo, "NumPlayers", ((struct axgsq_serverinfo_theship *)pSIs)->NumPlayers );
 			ALLOC_INIT_ZVAL( zPlayerArray );
 			array_init( zPlayerArray );
-			int x;
-			for( x = 0; x < pSIs->NumPlayers; x++ )
+			for( x = 0; x < ((struct axgsq_serverinfo_theship *)pSIs)->NumPlayers; x++ )
 			{
 				ALLOC_INIT_ZVAL( zTempPArray );
 				array_init( zTempPArray );
-				add_assoc_long( zTempPArray, "Index", pSIs->Players[x].Index );
-				add_assoc_string( zTempPArray, "PlayerName", pSIs->Players[x].PlayerName, 1 );
-				add_assoc_long( zTempPArray, "Kills", pSIs->Players[x].Kills );
-				add_assoc_double( zTempPArray, "TimeConnected", pSIs->Players[x].TimeConnected );
+				add_assoc_long( zTempPArray, "Index", ((struct axgsq_serverinfo_theship *)pSIs)->Players[x].Index );
+				add_assoc_string( zTempPArray, "PlayerName", ((struct axgsq_serverinfo_theship *)pSIs)->Players[x].PlayerName, 1 );
+				add_assoc_long( zTempPArray, "Kills", ((struct axgsq_serverinfo_theship *)pSIs)->Players[x].Kills );
+				add_assoc_double( zTempPArray, "TimeConnected", ((struct axgsq_serverinfo_theship *)pSIs)->Players[x].TimeConnected );
 				add_next_index_zval( zPlayerArray, zTempPArray );
 			}
 			add_assoc_zval( zServerInfo, "Players", zPlayerArray );
